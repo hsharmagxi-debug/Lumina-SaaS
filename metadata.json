@@ -1,0 +1,6 @@
+{
+  "name": "Lumina Numerology",
+  "description": "Master Consensus Numerology — Pythagorean, Chaldean, Lo Shu Grid, Vedic, Pinnacles, Challenges, and Karmic analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
