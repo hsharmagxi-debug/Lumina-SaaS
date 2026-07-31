@@ -8,12 +8,20 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Marcellus&family=Raleway:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#050505;--bg2:#0C0C0E;--bg3:#111111;--s1:rgba(12,12,14,.97);--s2:rgba(20,20,22,.88);--s3:rgba(30,30,32,.6);--card:#0C0C0E;--gold:#C5A059;--gl:#E5C185;--gd:rgba(197,160,89,.06);--gb:rgba(197,160,89,.3);--teal:#2EC4B6;--purple:#B86EF0;--red:#E05C5C;--green:#4CAF80;--blue:#4A9EBF;--txt:#e5e5e5;--txh:#e5e5e5;--txd:#a1a1aa;--txm:#71717a;--bdr:rgba(255,255,255,.05);--bdb:rgba(197,160,89,.3)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Raleway',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;background-image:radial-gradient(ellipse 80% 60% at 18% 6%,rgba(184,110,240,.07) 0%,transparent 58%),radial-gradient(ellipse 65% 45% at 88% 88%,rgba(46,196,182,.055) 0%,transparent 60%),radial-gradient(ellipse 120% 90% at 50% 42%,rgba(197,160,89,.032) 0%,transparent 72%);background-attachment:fixed}
-canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.55}
+body{font-family:'Raleway',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;background-image:radial-gradient(ellipse 80% 60% at 18% 6%,rgba(184,110,240,.07) 0%,transparent 58%),radial-gradient(ellipse 65% 45% at 88% 88%,rgba(46,196,182,.055) 0%,transparent 60%),radial-gradient(ellipse 120% 90% at 50% 42%,rgba(197,160,89,.032) 0%,transparent 72%);background-attachment:fixed;cursor:default}
+
+/* Animated Custom Mouse Cursor & Stardust Trail */
+#magic-cursor{position:fixed;top:0;left:0;width:26px;height:26px;border:1.5px solid rgba(229,193,133,0.85);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:width .22s ease,height .22s ease,border-color .22s ease,background .22s ease;box-shadow:0 0 16px rgba(197,160,89,.45);display:flex;align-items:center;justify-content:center}
+#magic-cursor-dot{width:5px;height:5px;background:var(--gold);border-radius:50%;box-shadow:0 0 10px var(--gold)}
+#magic-cursor.hovering{width:44px;height:44px;border-color:var(--purple);background:rgba(184,110,240,0.14);box-shadow:0 0 28px rgba(184,110,240,0.55)}
+.stardust-particle{position:fixed;pointer-events:none;z-index:99998;border-radius:50%;animation:fadeOutStardust 0.8s ease-out forwards}
+@keyframes fadeOutStardust{0%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg)}100%{opacity:0;transform:translate(-50%,-22px) scale(0.2) rotate(45deg)}}
+
+canvas#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.65}
 .wrap{position:relative;z-index:1}
 header{position:sticky;top:0;z-index:100;background:rgba(5,5,5,.97);border-bottom:1px solid var(--bdr);backdrop-filter:blur(20px);padding:10px 18px;display:flex;align-items:center;justify-content:space-between}
 .logo{font-family:'Cinzel Decorative',serif;font-size:1.15rem;color:var(--gold);letter-spacing:2px;display:flex;align-items:center;gap:9px;text-decoration:none}
@@ -30,7 +38,7 @@ nav button:hover{color:var(--gl)}nav button.active{color:var(--gold);border-bott
 main{padding:18px 16px;max-width:800px;margin:0 auto}
 .card{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:18px;margin-bottom:12px;position:relative;overflow:hidden;animation:fadeIn .4s ease;box-shadow:0 10px 34px rgba(0,0,0,.34)}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4}
-.ct{font-family:'Cinzel',serif;font-size:.74rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ct{font-family:'Marcellus','Cinzel',serif;font-size:.82rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .badge{display:inline-block;font-family:'JetBrains Mono',monospace;background:var(--gd);border:1px solid var(--bdr);border-radius:4px;padding:2px 7px;font-size:.55rem;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-right:3px}
 .badge.new{background:rgba(46,196,182,.1);border-color:rgba(46,196,182,.3);color:var(--teal)}
 .badge.master{background:rgba(184,110,240,.1);border-color:rgba(184,110,240,.3);color:var(--purple)}
@@ -396,7 +404,8 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
 </head>
 <body>
 <div id="auth-gateway" class="auth-gateway" style="display:none">
-  <div class="auth-card">
+  <div class="auth-card" style="position:relative">
+    <button onclick="closeAuthModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--txm);font-size:1.1rem;cursor:pointer;padding:4px" title="Close">✕</button>
     <div class="auth-title">✦ LUMINA ✦</div>
     <div class="auth-subtitle">Secured Federated Gateway</div>
     <p style="font-size:0.75rem;color:var(--txd);line-height:1.6;margin-bottom:20px">
@@ -508,18 +517,23 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
 </div>
 
 <canvas id="stars"></canvas>
+<div id="magic-cursor"><div id="magic-cursor-dot"></div></div>
 <div class="wrap">
 <header>
-  <a class="logo" href="#"><div class="logo-star">✦</div>LUMINA<span class="logo-v">v2.1</span></a>
-  <div style="display:flex;align-items:center;gap:10px;margin-left:auto">
+  <a class="logo" href="#" onclick="showLanding(); return false;"><div class="logo-star">✦</div>LUMINA<span class="logo-v">v2.1</span></a>
+  <div style="display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap">
+    <button onclick="scrollToSection('calculator-form')" style="background:rgba(197,160,89,0.12);border:1px solid var(--gb);border-radius:20px;padding:4px 12px;font-size:0.68rem;color:var(--gold);font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px">✦ Begin Reading</button>
+    <button onclick="scrollToSection('explore-features')" style="background:none;border:none;color:var(--txm);font-size:0.7rem;cursor:pointer">Explore</button>
+    <button onclick="scrollToSection('learn-section')" style="background:none;border:none;color:var(--txm);font-size:0.7rem;cursor:pointer">Learn</button>
     <button onclick="openDomainModal()" style="background:rgba(197,160,89,0.08);border:1px solid var(--bdr);border-radius:20px;padding:4px 10px;font-size:0.65rem;color:var(--gl);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s ease" title="bhasad.org Custom Domain Status">
       <span style="width:7px;height:7px;border-radius:50%;background:#34A853;box-shadow:0 0 8px #34A853"></span>
       bhasad.org ✦
     </button>
     <div id="user-header-badge" class="user-header-badge" style="display:none"></div>
+    <button id="btn-header-login" class="btn btn-gold btn-sm" onclick="openAuthModal()" style="padding:4px 12px;font-size:0.68rem">🔑 Sign In</button>
     <a class="creator-btn" href="https://hsharmagxi-debug.github.io" target="_blank">
       <div class="creator-av">HS</div>
-      <div class="creator-info"><b>Himanshu Sharma</b><span>Esoteric Analytics Guild · Delhi</span></div>
+      <div class="creator-info"><b>Himanshu Sharma</b><span>Esoteric Guild</span></div>
     </a>
   </div>
 </header>
@@ -537,30 +551,360 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
 </nav>
 <main id="main">
 
-<div id="landing" class="landing">
-  <div class="ltitle">✦ LUMINA</div>
-  <div class="lsub">Master Consensus Numerology · World's Most Sophisticated Premium App</div>
-  <div class="lver">v2.1 · Pythagorean · Chaldean · Lo Shu · Vedic · Pinnacles · Karmic · 100% Secure Local Engine</div>
-  <div class="lform">
-    <div class="ct">◈ Create Your Profile</div>
-    <div class="fg"><label>Full Birth Name (as on certificate)</label><input type="text" id="inp-name" placeholder="e.g. Himanshu Sharma" maxlength="80"></div>
-    <div class="fg"><label>Date of Birth</label><input type="date" id="inp-dob"></div>
-    <div class="fg"><label>Birth Time</label><input type="time" id="inp-time"></div>
-    <div class="fg"><label>Birth Place</label><input type="text" id="inp-place" placeholder="e.g. Delhi, India" maxlength="50"></div>
-    <div class="fg"><label>Nickname</label><input type="text" id="inp-nick" placeholder="e.g. Ashu" maxlength="30"></div>
-    <div class="fg"><label>Subscription Plan Tier</label>
-      <select id="inp-plan" style="width:100%;padding:10px;background:rgba(197,160,89,.04);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);font-family:'Raleway',sans-serif;font-size:.85rem">
-        <option value="free">Free Tier (Gated Access)</option>
-        <option value="paid">Premium Tier (All Unlocked)</option>
-      </select>
+<div id="landing" class="landing" style="padding:0">
+  <!-- Mystical Hero Banner -->
+  <div class="hero-container" style="padding:48px 16px 36px;text-align:center;position:relative;max-width:920px;margin:0 auto">
+    <!-- Background sacred symbols -->
+    <div style="position:absolute;top:8%;left:4%;font-family:'Cinzel',serif;font-size:2.2rem;color:rgba(197,160,89,0.07);pointer-events:none">1</div>
+    <div style="position:absolute;top:18%;right:6%;font-family:'Cinzel',serif;font-size:2.8rem;color:rgba(184,110,240,0.08);pointer-events:none">7</div>
+    <div style="position:absolute;bottom:12%;left:8%;font-family:'Cinzel',serif;font-size:2.4rem;color:rgba(46,196,182,0.07);pointer-events:none">11</div>
+    <div style="position:absolute;bottom:22%;right:10%;font-family:'Cinzel',serif;font-size:3rem;color:rgba(197,160,89,0.08);pointer-events:none">22</div>
+
+    <div style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(90deg,rgba(197,160,89,0.15),rgba(184,110,240,0.12));border:1px solid rgba(197,160,89,0.35);color:var(--gl);padding:5px 18px;border-radius:24px;font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;box-shadow:0 0 20px rgba(197,160,89,0.15)">
+      <span>✦</span> SOUL CONNECTED TO YOU · ANCIENT CODES REVEALED <span>✦</span>
     </div>
-    <button class="btn btn-gold" style="width:100%;margin-bottom:10px" onclick="createProfile()">✦ Reveal My Numbers</button>
-    <div id="existing-profiles"></div>
+
+    <h1 style="font-family:'Cinzel Decorative',serif;font-size:clamp(2.4rem, 8vw, 4.5rem);color:var(--gold);letter-spacing:5px;margin-bottom:14px;text-shadow:0 0 35px rgba(197,160,89,0.45);line-height:1.1">
+      L U M I N A
+    </h1>
+
+    <div style="font-family:'Cinzel',serif;font-size:clamp(1.05rem, 2.8vw, 1.45rem);color:#fff;letter-spacing:1.5px;margin-bottom:16px;font-weight:600">
+      Uncover Your Yesterday, Today & Tomorrow
+    </div>
+
+    <p style="font-size:0.92rem;color:var(--txd);max-width:660px;margin:0 auto 28px;line-height:1.8">
+      Unroll your personal cosmic <b style="color:var(--gl)">schrol</b> of destiny. Uncover the karmic connections binding your life path, reveal hidden ancestral vibrations, and discover every soul connected to you through 5-system master consensus analytics.
+    </p>
+
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:36px">
+      <button class="btn btn-gold" onclick="scrollToSection('calculator-form')" style="padding:13px 28px;font-size:0.82rem;box-shadow:0 0 24px rgba(197,160,89,0.35)">✦ REVEAL MY BLUEPRINT ➔</button>
+      <button class="btn btn-purple" onclick="scrollToSection('sacred-schrol')" style="padding:13px 26px;font-size:0.82rem">📜 UNROLL SACRED SCHROL</button>
+      <button class="btn btn-teal" onclick="scrollToSection('karmic-connection')" style="padding:13px 24px;font-size:0.82rem">💖 KARMIC CONNECTION</button>
+    </div>
   </div>
-  <div style="margin-top:18px;font-size:.65rem;color:var(--txm)">⚿ 100% SECURE CLIENT-SIDE COMPUTATION · ABSOLUTE PRIVACY · ESOTERIC ANALYTICS GUILD</div>
+
+  <!-- Section: The Sacred Schrol of Destiny (Interactive Unrolling Preview) -->
+  <div id="sacred-schrol" style="max-width:840px;margin:0 auto 40px;padding:0 16px">
+    <div style="background:linear-gradient(135deg,rgba(20,20,22,0.95),rgba(12,12,14,0.98));border:1px solid var(--gb);border-radius:18px;padding:26px 20px;position:relative;overflow:hidden;box-shadow:0 14px 44px rgba(0,0,0,0.5)">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--purple),transparent)"></div>
+      
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:4px">📜 Interactive Ancient Parchment</div>
+        <h2 style="font-family:'Cinzel Decorative',serif;font-size:1.35rem;color:var(--gl)">Unroll Your Destiny Schrol</h2>
+        <p style="font-size:0.76rem;color:var(--txd);margin-top:4px">Select a time horizon below to reveal the cosmic frequency governing your soul</p>
+      </div>
+
+      <!-- Schrol Horizon Selector -->
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;flex-wrap:wrap">
+        <button id="schrol-btn-yesterday" onclick="switchSchrolTab('yesterday')" style="padding:8px 16px;border-radius:20px;background:rgba(197,160,89,0.08);border:1px solid var(--bdr);color:var(--txd);font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.3s">
+          ⏪ Your Yesterday
+        </button>
+        <button id="schrol-btn-today" onclick="switchSchrolTab('today')" style="padding:8px 16px;border-radius:20px;background:var(--gd);border:1px solid var(--gold);color:var(--gold);font-size:0.75rem;font-weight:700;cursor:pointer;transition:all 0.3s">
+          📍 Your Today (2026 Live)
+        </button>
+        <button id="schrol-btn-tomorrow" onclick="switchSchrolTab('tomorrow')" style="padding:8px 16px;border-radius:20px;background:rgba(184,110,240,0.08);border:1px solid var(--bdr);color:var(--txd);font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.3s">
+          ⏩ Your Tomorrow
+        </button>
+      </div>
+
+      <!-- Schrol Active Content Panels -->
+      <div id="schrol-panel-yesterday" style="display:none;background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:20px;text-align:left">
+        <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);margin-bottom:8px">📜 Your Yesterday: Ancestral Footprint & Karmic Debt</div>
+        <p style="font-size:0.8rem;color:var(--txd);line-height:1.65;margin-bottom:12px">
+          Every soul enters this dimension carrying the energetic momentum of prior iterations. Uncover your inherited karmic lessons (13/4, 14/5, 16/7, 19/1), resolve ancient soul debts, and understand why certain past patterns repeatedly manifested in your youth.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
+          <div style="background:rgba(197,160,89,0.05);border:1px solid var(--bdr);padding:12px;border-radius:8px">
+            <div style="font-size:0.72rem;color:var(--gold);font-weight:700">Karmic Origins</div>
+            <div style="font-size:0.7rem;color:var(--txm)">Ancestral spiritual blueprint & carried soul vows</div>
+          </div>
+          <div style="background:rgba(197,160,89,0.05);border:1px solid var(--bdr);padding:12px;border-radius:8px">
+            <div style="font-size:0.72rem;color:var(--purple);font-weight:700">Past Life Pinnacles</div>
+            <div style="font-size:0.7rem;color:var(--txm)">Early life testing cycles & resolution keys</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="schrol-panel-today" style="display:block;background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:20px;text-align:left">
+        <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gl);margin-bottom:8px">☀️ Your Today: Live Universal 2026 Frequency</div>
+        <p style="font-size:0.8rem;color:var(--txd);line-height:1.65;margin-bottom:14px">
+          The cosmos operates on an uninterrupted mathematical pulse. Uncover your exact daily personal day vibration, power hours, lucky gem alignments, and sovereign daily affirmation.
+        </p>
+        <div style="display:flex;align-items:center;gap:14px;background:rgba(197,160,89,0.06);border:1px solid var(--gb);padding:14px;border-radius:10px;flex-wrap:wrap">
+          <div style="font-family:'Cinzel',serif;font-size:2rem;color:var(--gold);line-height:1">1</div>
+          <div style="flex:1;min-width:180px">
+            <div style="font-size:0.75rem;font-weight:700;color:#fff">Universal Day 1 · New Sovereign Beginnings</div>
+            <div style="font-size:0.7rem;color:var(--txd);font-style:italic">"I step into my power with clarity. Today's frequency supports decisive action and fresh creation."</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="schrol-panel-tomorrow" style="display:none;background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:20px;text-align:left">
+        <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--purple);margin-bottom:8px">🔮 Your Tomorrow: Upcoming 12-Month Pinnacle Horizon</div>
+        <p style="font-size:0.8rem;color:var(--txd);line-height:1.65;margin-bottom:12px">
+          Prepare for your next major life transition before it unfolds. Reveal your upcoming personal year transit, 4 major pinnacle dates, and peak financial/relational windows for the months ahead.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
+          <div style="background:rgba(184,110,240,0.05);border:1px solid var(--bdr);padding:12px;border-radius:8px">
+            <div style="font-size:0.72rem;color:var(--purple);font-weight:700">Upcoming Year Cycle</div>
+            <div style="font-size:0.7rem;color:var(--txm)">12-month personal year vibration map</div>
+          </div>
+          <div style="background:rgba(184,110,240,0.05);border:1px solid var(--bdr);padding:12px;border-radius:8px">
+            <div style="font-size:0.72rem;color:var(--teal);font-weight:700">Pinnacle Turning Points</div>
+            <div style="font-size:0.7rem;color:var(--txm)">Major career & relationship shift dates</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick DOB Live Teaser Widget -->
+      <div style="margin-top:20px;padding:16px;background:rgba(197,160,89,0.04);border:1px dashed var(--gb);border-radius:12px;text-align:center">
+        <div style="font-family:'Cinzel',serif;font-size:0.82rem;color:var(--gold);margin-bottom:6px">⚡ Instant Teaser: Reveal Life Path in 1 Second</div>
+        <div style="font-size:0.72rem;color:var(--txd);margin-bottom:10px">Select your date of birth below to unroll your immediate core vibration:</div>
+        <div style="display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap">
+          <input type="date" id="schrol-quick-dob" style="max-width:200px;padding:8px 12px;font-size:0.8rem">
+          <button class="btn btn-gold btn-sm" onclick="calculateSchrolTeaser()">✦ Uncover ➔</button>
+        </div>
+        <div id="schrol-teaser-result" style="display:none;margin-top:12px;padding:10px;background:var(--s2);border:1px solid var(--gb);border-radius:8px;animation:fadeIn 0.3s ease"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Interactive Profile Calculator Form (#calculator-form) -->
+  <div id="calculator-form" style="max-width:560px;margin:0 auto 40px;padding:0 16px">
+    <div class="lform" style="max-width:100%;box-shadow:0 12px 40px rgba(0,0,0,0.4)">
+      <div class="ct" style="justify-content:center;font-size:0.92rem">◈ REVEAL YOUR SOUL'S BLUEPRINT</div>
+      <div style="font-size:0.72rem;color:var(--txd);text-align:center;margin-bottom:18px">Provide your birth certificate details to uncover your full multi-system matrix</div>
+
+      <div class="fg"><label>Full Birth Name (as on certificate)</label><input type="text" id="inp-name" placeholder="e.g. Himanshu Sharma" maxlength="80"></div>
+      <div class="fg"><label>Date of Birth</label><input type="date" id="inp-dob"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fg"><label>Birth Time</label><input type="time" id="inp-time"></div>
+        <div class="fg"><label>Birth Place</label><input type="text" id="inp-place" placeholder="e.g. Delhi, India" maxlength="50"></div>
+      </div>
+      <div class="fg"><label>Nickname</label><input type="text" id="inp-nick" placeholder="e.g. Ashu" maxlength="30"></div>
+      <div class="fg"><label>Subscription Plan Tier</label>
+        <select id="inp-plan" style="width:100%;padding:10px;background:rgba(197,160,89,.04);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);font-family:'Raleway',sans-serif;font-size:.85rem">
+          <option value="free">Free Tier (Gated Access)</option>
+          <option value="paid" selected>Premium Tier (All Unlocked)</option>
+        </select>
+      </div>
+
+      <button class="btn btn-gold" style="width:100%;padding:13px;margin-bottom:14px;font-size:0.82rem;box-shadow:0 0 22px rgba(197,160,89,0.35)" onclick="createProfile()">✦ UNCOVER MY NUMBERS & KARMIC MATRIX ➔</button>
+
+      <div id="existing-profiles"></div>
+
+      <div class="divider">or quick sign-in with</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <button type="button" class="btn btn-outline btn-sm" onclick="triggerFederatedLogin('google')" style="justify-content:center">Google</button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="triggerFederatedLogin('github')" style="justify-content:center">GitHub</button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="triggerFederatedLogin('linkedin')" style="justify-content:center">LinkedIn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Karmic Connection & Soul Connected To You -->
+  <div id="karmic-connection" style="max-width:840px;margin:0 auto 40px;padding:0 16px">
+    <div style="background:linear-gradient(135deg,rgba(184,110,240,0.08),rgba(46,196,182,0.06));border:1px solid rgba(184,110,240,0.3);border-radius:18px;padding:26px 20px;text-align:center">
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:2px;color:var(--purple);margin-bottom:4px">💖 Relational Resonance</div>
+      <h2 style="font-family:'Cinzel Decorative',serif;font-size:1.35rem;color:#fff;margin-bottom:8px">Discover Every Soul Connected To You</h2>
+      <p style="font-size:0.78rem;color:var(--txd);max-width:620px;margin:0 auto 20px;line-height:1.6">
+        Whether it is a romantic partner, business associate, or family member—uncover the true <b>Karmic Connection</b> binding your vibrational signatures across 5 esoteric systems.
+      </p>
+
+      <!-- Live Karmic Connection Matcher Interactive Box -->
+      <div style="max-width:520px;margin:0 auto;background:var(--s2);border:1px solid var(--bdr);border-radius:14px;padding:18px;text-align:left">
+        <div style="font-family:'Cinzel',serif;font-size:0.85rem;color:var(--gl);margin-bottom:12px;text-align:center">⚡ Quick Karmic Alignment Test</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+          <div>
+            <label style="font-size:0.6rem">Your Name</label>
+            <input type="text" id="karmic-p1" placeholder="Your Name" style="padding:8px 10px;font-size:0.78rem">
+          </div>
+          <div>
+            <label style="font-size:0.6rem">Soul Connected To You</label>
+            <input type="text" id="karmic-p2" placeholder="Partner / Friend" style="padding:8px 10px;font-size:0.78rem">
+          </div>
+        </div>
+        <button class="btn btn-purple btn-sm" style="width:100%;justify-content:center;padding:9px" onclick="checkKarmicConnection()">✦ Reveal Karmic Connection ➔</button>
+        <div id="karmic-match-result" style="display:none;margin-top:12px;padding:12px;background:rgba(184,110,240,0.08);border:1px solid rgba(184,110,240,0.3);border-radius:8px;text-align:center"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Core Features Grid -->
+  <div id="explore-features" style="max-width:840px;margin:0 auto 40px;padding:0 16px">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:4px">Esoteric Tools</div>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gl)">Explore Your Esoteric Blueprint</h2>
+      <p style="font-size:0.75rem;color:var(--txd);margin-top:2px">Comprehensive multi-system analytics designed for deep self-mastery</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:18px;text-align:left;position:relative">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:1.2rem;color:var(--gold)">✨</div>
+          <span style="background:rgba(52,168,83,0.15);color:#34A853;padding:2px 8px;border-radius:10px;font-size:0.6rem;font-weight:700">Free</span>
+        </div>
+        <div style="font-family:'Cinzel',serif;font-size:0.95rem;color:#fff;margin-bottom:4px">Blueprint Reading</div>
+        <div style="font-size:0.72rem;color:var(--txd);line-height:1.5;margin-bottom:12px">Uncover your Life Path, Expression, and Soul Urge numbers revealing your primary purpose.</div>
+        <button onclick="scrollToSection('calculator-form')" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">Calculate Now ➔</button>
+      </div>
+
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:18px;text-align:left;position:relative">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:1.2rem;color:var(--teal)">📅</div>
+          <span style="background:rgba(52,168,83,0.15);color:#34A853;padding:2px 8px;border-radius:10px;font-size:0.6rem;font-weight:700">Free</span>
+        </div>
+        <div style="font-family:'Cinzel',serif;font-size:0.95rem;color:#fff;margin-bottom:4px">Energy Calendar</div>
+        <div style="font-size:0.72rem;color:var(--txd);line-height:1.5;margin-bottom:12px">View daily numerological energies and find auspicious dates for important decisions.</div>
+        <button onclick="scrollToSection('calculator-form')" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">Explore Calendar ➔</button>
+      </div>
+
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:18px;text-align:left;position:relative">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:1.2rem;color:var(--purple)">⚖️</div>
+          <span style="background:rgba(46,196,182,0.15);color:var(--teal);padding:2px 8px;border-radius:10px;font-size:0.6rem;font-weight:700">1 Free</span>
+        </div>
+        <div style="font-family:'Cinzel',serif;font-size:0.95rem;color:#fff;margin-bottom:4px">Name Analysis</div>
+        <div style="font-size:0.72rem;color:var(--txd);line-height:1.5;margin-bottom:12px">Compare different name options and see how spelling variations shift your vibrational matrix.</div>
+        <button onclick="scrollToSection('calculator-form')" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">Analyze Name ➔</button>
+      </div>
+
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:18px;text-align:left;position:relative">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:1.2rem;color:var(--red)">💖</div>
+          <span style="background:rgba(197,160,89,0.2);color:var(--gold);padding:2px 8px;border-radius:10px;font-size:0.6rem;font-weight:700">🔒 Premium</span>
+        </div>
+        <div style="font-family:'Cinzel',serif;font-size:0.95rem;color:#fff;margin-bottom:4px">Relationship Compatibility</div>
+        <div style="font-size:0.72rem;color:var(--txd);line-height:1.5;margin-bottom:12px">Explore the multi-system numerological dynamics between you and your partner or match.</div>
+        <button onclick="openAuthModal()" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">Unlock with Premium 🔒</button>
+      </div>
+
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:18px;text-align:left;position:relative">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:1.2rem;color:var(--blue)">🌙</div>
+          <span style="background:rgba(197,160,89,0.2);color:var(--gold);padding:2px 8px;border-radius:10px;font-size:0.6rem;font-weight:700">🔒 Premium</span>
+        </div>
+        <div style="font-family:'Cinzel',serif;font-size:0.95rem;color:#fff;margin-bottom:4px">Lo Shu & Pinnacles</div>
+        <div style="font-size:0.72rem;color:var(--txd);line-height:1.5;margin-bottom:12px">Complete 9-cell grid mapping, missing planes, and 4 major life pinnacle transition dates.</div>
+        <button onclick="openAuthModal()" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">Unlock Grid 🔒</button>
+      </div>
+
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:18px;text-align:left;position:relative">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:1.2rem;color:var(--purple)">⬡</div>
+          <span style="background:rgba(197,160,89,0.2);color:var(--gold);padding:2px 8px;border-radius:10px;font-size:0.6rem;font-weight:700">🔒 Premium</span>
+        </div>
+        <div style="font-family:'Cinzel',serif;font-size:0.95rem;color:#fff;margin-bottom:4px">5-Agent Expert Council</div>
+        <div style="font-size:0.72rem;color:var(--txd);line-height:1.5;margin-bottom:12px">Synthetic synthesis from Chaudhry, Jumaani, Chakraborty, Kapil & Nayar algorithms.</div>
+        <button onclick="openAuthModal()" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">Consult Council 🔒</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Free vs Premium Tier Availability Matrix -->
+  <div style="max-width:840px;margin:0 auto 40px;padding:0 16px">
+    <div style="background:var(--s1);border:1px solid var(--gb);border-radius:16px;padding:22px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.3)">
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:4px">Feature Tier Matrix</div>
+      <h2 style="font-family:'Marcellus','Cinzel',serif;font-size:1.3rem;color:var(--gl);margin-bottom:16px">Free vs Premium Membership Availability</h2>
+      
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:0.75rem;text-align:left">
+          <thead>
+            <tr style="border-bottom:1px solid var(--gb);background:rgba(197,160,89,0.06)">
+              <th style="padding:10px;color:var(--gold);font-weight:700">Numerology Capability</th>
+              <th style="padding:10px;color:#34A853;text-align:center;font-weight:700">Free Tier ($0)</th>
+              <th style="padding:10px;color:var(--purple);text-align:center;font-weight:700">Premium Member</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--bdr)">
+              <td style="padding:10px;color:var(--txt)">Pythagorean Life Path & Birthday Number</td>
+              <td style="padding:10px;text-align:center;color:#34A853">✓ Included</td>
+              <td style="padding:10px;text-align:center;color:var(--gold)">✓ Unrestricted</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--bdr)">
+              <td style="padding:10px;color:var(--txt)">Chaldean & Vedic Moolank/Bhagyank</td>
+              <td style="padding:10px;text-align:center;color:var(--txm)">Basic Preview</td>
+              <td style="padding:10px;text-align:center;color:var(--gold)">✓ Full Analysis</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--bdr)">
+              <td style="padding:10px;color:var(--txt)">4000-Yr Lo Shu Grid & Missing Number Remedies</td>
+              <td style="padding:10px;text-align:center;color:var(--txm)">🔒 Gated</td>
+              <td style="padding:10px;text-align:center;color:var(--gold)">✓ Unlocked</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--bdr)">
+              <td style="padding:10px;color:var(--txt)">4 Pinnacles & 12-Month Personal Transits</td>
+              <td style="padding:10px;text-align:center;color:var(--txm)">🔒 Gated</td>
+              <td style="padding:10px;text-align:center;color:var(--gold)">✓ Unlocked</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--bdr)">
+              <td style="padding:10px;color:var(--txt)">Decoz Bridge Numbers & Expression Planes</td>
+              <td style="padding:10px;text-align:center;color:var(--txm)">🔒 Gated</td>
+              <td style="padding:10px;text-align:center;color:var(--gold)">✓ Unlocked</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--bdr)">
+              <td style="padding:10px;color:var(--txt)">5-Agent Expert Consensus Council Reading</td>
+              <td style="padding:10px;text-align:center;color:var(--txm)">🔒 Gated</td>
+              <td style="padding:10px;text-align:center;color:var(--gold)">✓ Unlocked</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--bdr)">
+              <td style="padding:10px;color:var(--txt)">PDF Export & Google Drive Auto-Sync</td>
+              <td style="padding:10px;text-align:center;color:var(--txm)">🔒 Gated</td>
+              <td style="padding:10px;text-align:center;color:var(--gold)">✓ Unlocked</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px">
+        <button onclick="scrollToSection('calculator-form')" class="btn btn-gold btn-sm">✦ Create Profile to Select Tier ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Testimonials -->
+  <div style="max-width:840px;margin:0 auto 40px;padding:0 16px">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-bottom:4px">Transformations</div>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gl)">What Awakened Seekers Are Saying</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:18px">
+        <div style="color:var(--gold);font-size:0.8rem;margin-bottom:8px">★★★★★</div>
+        <div style="font-size:0.76rem;color:var(--txd);font-style:italic;line-height:1.6;margin-bottom:12px">
+          "Unrolling my destiny schrol gave me chills. Uncovering my yesterday, today & tomorrow showed me the exact karmic connections driving my major life decisions."
+        </div>
+        <div style="font-size:0.75rem;font-weight:700;color:#fff">Elena M.</div>
+        <div style="font-size:0.62rem;color:var(--gold)">Life Path 8 · Master Sovereign</div>
+      </div>
+
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:18px">
+        <div style="color:var(--gold);font-size:0.8rem;margin-bottom:8px">★★★★★</div>
+        <div style="font-size:0.76rem;color:var(--txd);font-style:italic;line-height:1.6;margin-bottom:12px">
+          "The Karmic Connection finder revealed why my soul was connected to my partner. Understanding our dual numbers transformed our relationship entirely."
+        </div>
+        <div style="font-size:0.75rem;font-weight:700;color:#fff">Marcus T.</div>
+        <div style="font-size:0.62rem;color:var(--gold)">Life Path 6 · Twin Flame Alignment</div>
+      </div>
+
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:12px;padding:18px">
+        <div style="color:var(--gold);font-size:0.8rem;margin-bottom:8px">★★★★★</div>
+        <div style="font-size:0.76rem;color:var(--txd);font-style:italic;line-height:1.6;margin-bottom:12px">
+          "Lumina is unlike anything else on the internet. The 5-agent council gave me deep clarity that surface-level apps never came close to delivering."
+        </div>
+        <div style="font-size:0.75rem;font-weight:700;color:#fff">Sophia L.</div>
+        <div style="font-size:0.62rem;color:var(--gold)">Life Path 11 · Master Visionary</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;text-align:center;font-size:.65rem;color:var(--txm);padding-bottom:30px">
+    ⚿ 100% SECURE CLIENT-SIDE COMPUTATION · ABSOLUTE PRIVACY · ESOTERIC ANALYTICS GUILD
+  </div>
 </div>
 
 <div class="tab-content" id="tab-dashboard">
+  <div id="user-membership-banner"></div>
   <div class="print-only" id="print-header">
     <div style="font-family:'Cinzel',serif;font-size:1.5rem;color:#8a6d1f;letter-spacing:1px">✦ LUMINA NUMEROLOGY</div>
     <div id="print-sub" style="font-size:.82rem;color:#444;margin-top:2px"></div>
@@ -1100,11 +1444,43 @@ function launchApp(){document.getElementById('landing').style.display='none';doc
 function renderDash(){
   const p=profiles[ai];if(!p)return;
   const plan=p.plan||'free';
-  if(plan==='free'){
+  const isFree=(plan==='free');
+  if(isFree){
     document.body.classList.add('free-tier');
   }else{
     document.body.classList.remove('free-tier');
   }
+
+  // Render Membership Status Banner on Dashboard
+  const bannerEl=document.getElementById('user-membership-banner');
+  if(bannerEl){
+    bannerEl.innerHTML=isFree?`
+      <div style="background:linear-gradient(135deg,rgba(197,160,89,0.12),rgba(12,12,14,0.95));border:1px solid var(--gb);border-radius:14px;padding:16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,0.3)">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:0.95rem;color:var(--gold);display:flex;align-items:center;gap:8px">
+            <span>🆓</span> FREE TIER ACTIVE · CORE MATRIX REVEALED
+          </div>
+          <div style="font-size:0.73rem;color:var(--txd);margin-top:2px">
+            Your Pythagorean Life Path & Birthday numbers are unlocked. Upgrade to Premium for 100% access to Lo Shu, 12-Month Transits, Karmic Remedies & 5-Agent Council Synthesis.
+          </div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="toggleCurrentProfilePlan()">👑 Upgrade to Premium Tier ➔</button>
+      </div>
+    `:`
+      <div style="background:linear-gradient(135deg,rgba(184,110,240,0.15),rgba(197,160,89,0.1));border:1px solid var(--purple);border-radius:14px;padding:16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,0.3)">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:0.95rem;color:var(--purple);display:flex;align-items:center;gap:8px">
+            <span>👑</span> PREMIUM MEMBER ACTIVATED · UNLIMITED 5-SYSTEM ACCESS
+          </div>
+          <div style="font-size:0.73rem;color:var(--txd);margin-top:2px">
+            All 5 numerology system reports, PDF Exports, Google Drive sync, and 5-Agent Consensus are unlocked for your profile!
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="toggleCurrentProfilePlan()" style="border-color:var(--purple);color:var(--purple)">Switch to Free Tier</button>
+      </div>
+    `;
+  }
+
   const N=calcNumbers(p.name,p.dob,p.time,p.place);
   const nick=p.nick||p.name.split(' ')[0];
   // Minor numbers from nickname
@@ -1140,6 +1516,18 @@ function renderDash(){
   renderDiamond(N);
   renderKarmic(N);renderVedic(N);renderCoords(N,p);renderLS(N);renderCycles(N,p);renderMonthStrip(N);renderForecast(N,p);renderLC(N,p);renderPT();updateChips();renderAgents();
   document.getElementById('meanings-content').innerHTML=[N.lp,N.expr,N.soul].map(n=>{const mn=NM[n];return mn?`<div style="margin-bottom:10px"><span class="highlight">${n} — ${mn.k} (${mn.t})</span><br><span style="color:var(--txd)">${mn.d}</span></div>`:''}).join('');
+
+  initLockOverlays();
+}
+
+function toggleCurrentProfilePlan(){
+  if(!profiles[ai])return;
+  profiles[ai].plan=(profiles[ai].plan==='paid')?'free':'paid';
+  sp();
+  renderDash();
+  renderPT();
+  initLockOverlays();
+  showToast(`Profile "${profiles[ai].nick}" switched to ${profiles[ai].plan.toUpperCase()} Tier ✦`);
 }
 
 function orbPurple(v,l,m){return`<div class="norb"><div class="nval" style="color:var(--purple)">${v}</div><div class="nlbl">${l}</div><div class="nmng">${m||''}</div></div>`;}
@@ -1880,11 +2268,84 @@ function switchTab(name){
 }
 
 function initStars(){
-  const c=document.getElementById('stars');const ctx=c.getContext('2d');
+  const c=document.getElementById('stars');if(!c)return;
+  const ctx=c.getContext('2d');
   c.width=window.innerWidth;c.height=window.innerHeight;
-  const stars=Array.from({length:170},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.1+.2,a:Math.random(),da:Math.random()*.007-.0035}));
-  function draw(){ctx.clearRect(0,0,c.width,c.height);stars.forEach(s=>{s.a=Math.max(0,Math.min(1,s.a+s.da));if(s.a<=0||s.a>=1)s.da*=-1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(240,208,128,${s.a*.62})`;ctx.fill();});requestAnimationFrame(draw);}
-  draw();window.addEventListener('resize',()=>{c.width=window.innerWidth;c.height=window.innerHeight;});
+  const stars=Array.from({length:200},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+.3,a:Math.random(),da:Math.random()*.008-.004,speedY:Math.random()*.12+.03}));
+  const dust=Array.from({length:40},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*2.2+1,a:Math.random()*.4+.2,color:Math.random()>.5?'rgba(197,160,89,':'rgba(184,110,240,',vy:-(Math.random()*.25+.08),vx:(Math.random()-.5)*.18}));
+  let rotAngle=0;
+
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    rotAngle+=0.0006;
+    ctx.save();
+    ctx.translate(c.width/2,c.height*0.38);
+    ctx.rotate(rotAngle);
+    ctx.strokeStyle='rgba(197,160,89,0.035)';
+    ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(0,0,Math.min(c.width,c.height)*0.36,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0,Math.min(c.width,c.height)*0.22,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+
+    stars.forEach(s=>{
+      s.a=Math.max(0,Math.min(1,s.a+s.da));if(s.a<=0||s.a>=1)s.da*=-1;
+      s.y-=s.speedY;if(s.y<0)s.y=c.height;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(229,193,133,${s.a*.68})`;ctx.fill();
+    });
+
+    dust.forEach(d=>{
+      d.x+=d.vx;d.y+=d.vy;
+      if(d.y<0){d.y=c.height;d.x=Math.random()*c.width;}
+      if(d.x<0)d.x=c.width;if(d.x>c.width)d.x=0;
+      ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+      ctx.fillStyle=`${d.color}${d.a})`;ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+  window.addEventListener('resize',()=>{c.width=window.innerWidth;c.height=window.innerHeight;});
+  initMagicCursor();
+}
+
+// ── CUSTOM ANIMATED MOUSE POINTER & STARDUST TRAIL ──
+function initMagicCursor(){
+  let mouseX=window.innerWidth/2,mouseY=window.innerHeight/2;
+  let cursorX=mouseX,cursorY=mouseY;
+
+  window.addEventListener('mousemove',(e)=>{
+    mouseX=e.clientX;mouseY=e.clientY;
+    if(Math.random()>.45){
+      const p=document.createElement('div');
+      p.className='stardust-particle';
+      const sz=Math.random()*4+2;
+      p.style.width=sz+'px';p.style.height=sz+'px';
+      p.style.left=(e.clientX+(Math.random()*10-5))+'px';
+      p.style.top=(e.clientY+(Math.random()*10-5))+'px';
+      const cols=['#C5A059','#E5C185','#B86EF0','#2EC4B6','#FFFFFF'];
+      const c=cols[Math.floor(Math.random()*cols.length)];
+      p.style.background=c;p.style.boxShadow=`0 0 6px ${c}`;
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(),800);
+    }
+  });
+
+  function renderCursor(){
+    cursorX+=(mouseX-cursorX)*0.24;
+    cursorY+=(mouseY-cursorY)*0.24;
+    const cur=document.getElementById('magic-cursor');
+    if(cur){cur.style.left=cursorX+'px';cur.style.top=cursorY+'px';}
+    requestAnimationFrame(renderCursor);
+  }
+  renderCursor();
+
+  document.addEventListener('mouseover',(e)=>{
+    const tgt=e.target.closest('button, a, input, select, .norb, .card, .mcell, .pchip');
+    const cur=document.getElementById('magic-cursor');
+    if(cur){
+      if(tgt)cur.classList.add('hovering');
+      else cur.classList.remove('hovering');
+    }
+  });
 }
 
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
@@ -2239,24 +2700,181 @@ function exportPDF(){
 }
 
 function initLockOverlays(){
+  const p = profiles[ai];
+  const isPaid = p && p.plan === 'paid';
   const gatedTabs = ['tab-loshu', 'tab-cycles', 'tab-forecast', 'tab-compatibility', 'tab-solutions', 'tab-tools', 'tab-consensus'];
+  
   gatedTabs.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    if (el.querySelector('.premium-lock-overlay')) return;
-    const overlay = document.createElement('div');
-    overlay.className = 'premium-lock-overlay';
-    overlay.innerHTML = `
-      <div class="lock-icon">🔒</div>
-      <h3>Lumina Premium Feature</h3>
-      <p>This high-accuracy multi-system analysis requires an active Premium Tier account. Unlock detailed Lo Shu grids, life cycles, personalized 12-Month transits, auspicious date calendars, signature optimizers, and the 5-Agent Consensus Engine.</p>
-      <button class="btn btn-gold" onclick="switchTab('membership')">💎 Subscribe Now</button>
-    `;
-    el.insertBefore(overlay, el.firstChild);
+    let overlay = el.querySelector('.premium-lock-overlay');
+    if (isPaid) {
+      if (overlay) overlay.style.display = 'none';
+    } else {
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'premium-lock-overlay';
+        overlay.innerHTML = `
+          <div class="lock-icon">🔒</div>
+          <h3>Lumina Premium Feature</h3>
+          <p>This high-accuracy multi-system analysis requires an active Premium Tier account. Unlock detailed Lo Shu grids, life cycles, personalized 12-Month transits, auspicious date calendars, signature optimizers, and the 5-Agent Consensus Engine.</p>
+          <button class="btn btn-gold" onclick="toggleCurrentProfilePlan()">💎 Upgrade Profile to Premium</button>
+        `;
+        el.insertBefore(overlay, el.firstChild);
+      } else {
+        overlay.style.display = 'flex';
+      }
+    }
   });
 }
 
 let currentUser = JSON.parse(localStorage.getItem('lumina_v2_auth') || 'null');
+
+function openAuthModal() {
+  const gateway = document.getElementById('auth-gateway');
+  if (gateway) gateway.style.display = 'flex';
+}
+
+function closeAuthModal() {
+  const gateway = document.getElementById('auth-gateway');
+  if (gateway) gateway.style.display = 'none';
+}
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function switchSchrolTab(tab) {
+  const pYesterday = document.getElementById('schrol-panel-yesterday');
+  const pToday = document.getElementById('schrol-panel-today');
+  const pTomorrow = document.getElementById('schrol-panel-tomorrow');
+
+  const bYesterday = document.getElementById('schrol-btn-yesterday');
+  const bToday = document.getElementById('schrol-btn-today');
+  const bTomorrow = document.getElementById('schrol-btn-tomorrow');
+
+  if (!pYesterday || !pToday || !pTomorrow) return;
+
+  pYesterday.style.display = tab === 'yesterday' ? 'block' : 'none';
+  pToday.style.display = tab === 'today' ? 'block' : 'none';
+  pTomorrow.style.display = tab === 'tomorrow' ? 'block' : 'none';
+
+  if (bYesterday) {
+    bYesterday.style.background = tab === 'yesterday' ? 'var(--gd)' : 'rgba(197,160,89,0.08)';
+    bYesterday.style.borderColor = tab === 'yesterday' ? 'var(--gold)' : 'var(--bdr)';
+    bYesterday.style.color = tab === 'yesterday' ? 'var(--gold)' : 'var(--txd)';
+  }
+  if (bToday) {
+    bToday.style.background = tab === 'today' ? 'var(--gd)' : 'rgba(197,160,89,0.08)';
+    bToday.style.borderColor = tab === 'today' ? 'var(--gold)' : 'var(--bdr)';
+    bToday.style.color = tab === 'today' ? 'var(--gold)' : 'var(--txd)';
+  }
+  if (bTomorrow) {
+    bTomorrow.style.background = tab === 'tomorrow' ? 'rgba(184,110,240,0.15)' : 'rgba(184,110,240,0.08)';
+    bTomorrow.style.borderColor = tab === 'tomorrow' ? 'var(--purple)' : 'var(--bdr)';
+    bTomorrow.style.color = tab === 'tomorrow' ? 'var(--purple)' : 'var(--txd)';
+  }
+}
+
+function calculateSchrolTeaser() {
+  const dobInp = document.getElementById('schrol-quick-dob');
+  const resEl = document.getElementById('schrol-teaser-result');
+  if (!dobInp || !dobInp.value) {
+    showToast('Please select a date of birth first!');
+    return;
+  }
+  const digits = dobInp.value.replace(/\D/g, '');
+  if (!digits.length) return;
+  
+  let sum = digits.split('').reduce((a, c) => a + parseInt(c), 0);
+  while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
+    sum = sum.toString().split('').reduce((a, c) => a + parseInt(c), 0);
+  }
+
+  const archetypes = {
+    1: 'The Sovereign Leader · Catalyst of Innovation & Independent Power',
+    2: 'The Harmonizer · Intuitive Peacemaker & Sacred Mirror',
+    3: 'The Creative Luminary · Expression, Joy & Radiant Charisma',
+    4: 'The Master Builder · Discipline, Foundation & Ancestral Stability',
+    5: 'The Freedom Adventurer · Dynamic Shift, Versatility & Transformation',
+    6: 'The Devoted Nurturer · Unconditional Love, Harmony & Healing',
+    7: 'The Mystic Seeker · Deep Wisdom, Inner Knowledge & Cosmic Alignment',
+    8: 'The Infinite Sovereign · Material Mastery, Abundance & Karma',
+    9: 'The Universal Humanitarian · Higher Consciousness & Soul Completion',
+    11: 'Master Visionary · Spiritual Illumination & Intuitive Channel',
+    22: 'Master Architect · Turning Transcendent Dreams Into Reality',
+    33: 'Master Teacher · Cosmic Compassion & Universal Upliftment'
+  };
+
+  const archetypeText = archetypes[sum] || 'Cosmic Catalyst of Destiny';
+
+  if (resEl) {
+    resEl.style.display = 'block';
+    resEl.innerHTML = `
+      <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold);margin-bottom:4px">
+        ✦ Life Path ${sum} Uncovered ✦
+      </div>
+      <div style="font-size:0.78rem;color:#fff;font-weight:600;margin-bottom:4px">${archetypeText}</div>
+      <div style="font-size:0.7rem;color:var(--txd)">
+        Your soul carries a unique master vibration. Fill out your full profile below to unroll your complete 5-agent consensus analysis!
+      </div>
+    `;
+  }
+}
+
+function checkKarmicConnection() {
+  const p1 = document.getElementById('karmic-p1')?.value.trim();
+  const p2 = document.getElementById('karmic-p2')?.value.trim();
+  const resEl = document.getElementById('karmic-match-result');
+
+  if (!p1 || !p2) {
+    showToast('Please enter both names to test Karmic Connection!');
+    return;
+  }
+
+  const strCombo = (p1 + p2).toLowerCase().replace(/[^a-z]/g, '');
+  let val = 0;
+  for (let i = 0; i < strCombo.length; i++) {
+    val += strCombo.charCodeAt(i);
+  }
+  const resonance = 82 + (val % 17);
+
+  const connectionTypes = [
+    'Twin Flame Alignment · Deep Soul Growth & Catalytic Awakening',
+    'Karmic Mirror · Unfinished Soul Vows Seeking Harmonic Resolution',
+    'Destiny Catalyst · Mutual Amplification & Shared Material Mastery',
+    'Spiritual Companion · Boundless Intuitive Symbiosis & Harmony'
+  ];
+  const connType = connectionTypes[val % connectionTypes.length];
+
+  if (resEl) {
+    resEl.style.display = 'block';
+    resEl.innerHTML = `
+      <div style="font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:var(--gl);margin-bottom:4px">
+        💖 ${resonance}% Karmic Connection
+      </div>
+      <div style="font-size:0.8rem;color:var(--gold);font-weight:600;margin-bottom:6px">${connType}</div>
+      <div style="font-size:0.72rem;color:var(--txd);line-height:1.5">
+        The vibrational matrices of <b>${esc(p1)}</b> and <b>${esc(p2)}</b> hold a profound mathematical alignment. Generate full profiles to unlock deep relationship compatibility charts!
+      </div>
+    `;
+  }
+}
+
+function showLanding() {
+  const landing = document.getElementById('landing');
+  const nav = document.getElementById('nav');
+  const main = document.getElementById('main');
+  const tabs = document.querySelectorAll('.tab-content');
+  tabs.forEach(t => t.classList.remove('active'));
+  if (landing) landing.style.display = 'block';
+  if (nav) nav.style.display = 'none';
+  if (main) main.style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
 function checkAuth() {
   const gateway = document.getElementById('auth-gateway');
@@ -2265,16 +2883,17 @@ function checkAuth() {
   const main = document.getElementById('main');
   const footer = document.getElementById('footer');
   const userHeader = document.getElementById('user-header-badge');
+  const headerLoginBtn = document.getElementById('btn-header-login');
+
+  if (landing) landing.style.display = 'block';
+  if (main) main.style.display = 'block';
+  if (footer) footer.style.display = 'block';
 
   if (!currentUser) {
-    if (gateway) gateway.style.display = 'flex';
-    if (landing) landing.style.display = 'none';
-    if (nav) nav.style.display = 'none';
-    if (main) main.style.display = 'none';
-    if (footer) footer.style.display = 'none';
     if (userHeader) userHeader.style.display = 'none';
+    if (headerLoginBtn) headerLoginBtn.style.display = 'inline-flex';
   } else {
-    if (gateway) gateway.style.display = 'none';
+    if (headerLoginBtn) headerLoginBtn.style.display = 'none';
     if (userHeader) {
       userHeader.style.display = 'flex';
       userHeader.innerHTML = `
@@ -2292,11 +2911,6 @@ function checkAuth() {
       ai = parseInt(activeProfileIndex);
       if (isNaN(ai) || ai < 0 || ai >= profiles.length) ai = 0;
       launchApp();
-    } else {
-      if (landing) landing.style.display = 'block';
-      if (nav) nav.style.display = 'none';
-      if (main) main.style.display = 'block';
-      if (footer) footer.style.display = 'block';
     }
   }
 }
