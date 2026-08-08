@@ -401,6 +401,7 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
   text-decoration: underline;
 }
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <div id="auth-gateway" class="auth-gateway" style="display:none">
@@ -537,7 +538,7 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
       bhasad.org ✦
     </button>
     <div id="user-header-badge" class="user-header-badge" style="display:none"></div>
-    <button id="btn-header-login" class="btn btn-gold btn-sm" onclick="openAuthModal()" style="padding:4px 12px;font-size:0.68rem">🔑 Sign In</button>
+    <button id="btn-header-login" class="btn btn-gold btn-sm" onclick="openAuthModal()" style="padding:4px 12px;font-size:0.68rem">🔑 Sign In / Register</button>
     <a class="creator-btn" href="https://hsharmagxi-debug.github.io" target="_blank">
       <div class="creator-av">HS</div>
       <div class="creator-info"><b>Himanshu Sharma</b><span>Esoteric Guild</span></div>
@@ -2497,7 +2498,7 @@ try {
   firebase.initializeApp(firebaseConfig);
   auth = firebase.auth();
   provider = new firebase.auth.GoogleAuthProvider();
-  provider.addScope('https://www.googleapis.com/auth/drive.file');
+  provider.setCustomParameters({ prompt: 'select_account' });
   
   auth.onAuthStateChanged((user) => {
     updateGDriveButton();
@@ -2525,16 +2526,34 @@ async function handleGDriveAction() {
   if (!googleAccessToken) {
     btn.disabled = true;
     btn.innerHTML = '<span class="loader"></span> Connecting...';
+    
     try {
-      const result = await auth.signInWithPopup(provider);
-      googleAccessToken = result.credential.accessToken;
-      showToast('Google Drive Connected! ✦');
-      updateGDriveButton();
-    } catch (error) {
-      console.error('OAuth sign-in failed:', error);
-      showToast('Connection failed: ' + error.message);
-      updateGDriveButton();
-    } finally {
+      if (!window.gdriveTokenClient) {
+        window.gdriveTokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: '437784650725-knunaeion9kujr0ar872m4s93qphc2rc.apps.googleusercontent.com',
+          scope: 'https://www.googleapis.com/auth/drive.file',
+          callback: (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              googleAccessToken = tokenResponse.access_token;
+              showToast('Google Drive Connected! ✦');
+              updateGDriveButton();
+              saveReportToGoogleDrive();
+            } else {
+              showToast('Drive Connection failed or was cancelled.');
+              updateGDriveButton();
+            }
+            btn.disabled = false;
+          },
+          error_callback: (error) => {
+             console.error(error);
+             showToast('Error connecting to Drive.');
+             btn.disabled = false;
+          }
+        });
+      }
+      window.gdriveTokenClient.requestAccessToken({prompt: 'consent'});
+    } catch (err) {
+      console.error(err);
       btn.disabled = false;
     }
   } else {
@@ -3118,7 +3137,16 @@ function checkAuth() {
     }
 
     const activeProfileIndex = localStorage.getItem('lumina_v2_ai');
-    if (activeProfileIndex !== null && profiles.length > 0) {
+    if (profiles.length === 0) {
+      // Auto-fill the form with their name and scroll to it
+      const inpName = document.getElementById('inp-name');
+      if (inpName && !inpName.value && currentUser.name) {
+        inpName.value = currentUser.name;
+      }
+      setTimeout(() => {
+        scrollToSection('calculator-form');
+      }, 300);
+    } else if (activeProfileIndex !== null && profiles.length > 0) {
       ai = parseInt(activeProfileIndex);
       if (isNaN(ai) || ai < 0 || ai >= profiles.length) ai = 0;
       launchApp();
@@ -3127,6 +3155,7 @@ function checkAuth() {
 }
 
 function logout() {
+  if (typeof auth !== 'undefined' && auth) auth.signOut();
   currentUser = null;
   window.hasInitialSynced = false;
   localStorage.removeItem('lumina_v2_auth');
@@ -3149,7 +3178,7 @@ function logout() {
   }
 }
 
-function triggerFederatedLogin(provider) {
+function triggerFederatedLogin(providerName) {
   const initialView = document.getElementById('auth-initial-view');
   const providerView = document.getElementById('auth-provider-view');
   if (!initialView || !providerView) return;
@@ -3158,27 +3187,26 @@ function triggerFederatedLogin(provider) {
   providerView.style.display = 'flex';
 
   let brandColor = '#C9A84C';
-  let providerTitle = provider.charAt(0).toUpperCase() + provider.slice(1);
+  let providerTitle = providerName.charAt(0).toUpperCase() + providerName.slice(1);
   let content = '';
 
-  if (provider === 'google') {
-    brandColor = '#4285F4';
-    content = `
-      <div style="text-align:center;margin-bottom:20px;width:100%">
-        <svg width="40" height="40" viewBox="0 0 24 24" style="margin:0 auto 12px;display:block"><path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.68 1.54 14.98 1 12 1 7.35 1 3.37 3.65 1.41 7.54l3.85 2.99C6.2 7.04 8.87 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.35H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.67 2.84c2.15-1.98 3.38-4.89 3.38-8.55z"/><path fill="#FBBC05" d="M5.26 14.53c-.24-.72-.38-1.49-.38-2.28 0-.79.14-1.56.38-2.28L1.41 6.98C.51 8.78 0 10.78 0 12.91s.51 4.13 1.41 5.93l3.85-2.99s-.01-.13-.01-.32z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-2.9l-3.7-2.8c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2-6.7-5l-3.9 3C3.4 20.3 7.3 23 12 23z"/></svg>
-        <h3 style="font-size:1.15rem;font-weight:500;color:#fff;margin:0 0 4px;font-family:'Cinzel',serif">Sign in with Google</h3>
-        <p style="font-size:.72rem;color:var(--txm);margin:0">to continue to Lumina Numerology</p>
-      </div>
-      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--bdr);border-radius:8px;padding:12px;margin-bottom:18px;display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box">
-        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--gold)">
-        <div style="text-align:left">
-          <div style="font-size:.8rem;font-weight:600;color:#fff">Aditi Sharma</div>
-          <div style="font-size:.7rem;color:var(--txd)">aditi.cosmic@gmail.com</div>
-        </div>
-      </div>
-      <button type="button" class="btn btn-gold" onclick="submitInlineAuth('Aditi Sharma', 'aditi.cosmic@gmail.com', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', 'google')" style="width:100%;justify-content:center;padding:10px;font-size:0.75rem;font-weight:600">Continue as Aditi</button>
-    `;
-  } else if (provider === 'github') {
+  if (providerName === 'google') {
+    const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'google\')"]');
+    if (btn) btn.innerHTML = '<span class="loader" style="border-color:#000;border-bottom-color:transparent"></span> Connecting...';
+
+    (function(){ provider.setCustomParameters({ prompt: 'select_account' }); return auth.signInWithPopup(provider); })().then((result) => {
+      const user = result.user;
+      submitInlineAuth(user.displayName || 'User', user.email, user.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', 'google');
+    }).catch((error) => {
+      console.error(error);
+      showToast('Login failed: ' + error.message);
+      const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'google\')"]');
+      if (btn) btn.innerHTML = '<img src="https://www.svgrepo.com/show/475656/google-color.svg" style="width:18px;height:18px"> Continue with Google';
+    });
+    return;
+  }
+  
+  if (providerName === 'github') {
     brandColor = '#24292e';
     content = `
       <div style="text-align:center;margin-bottom:20px;width:100%">

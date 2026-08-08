@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+window.onload = function() {
+  google.accounts.id.initialize({
+    client_id: '437784650725-knunaeion9kujr0ar872m4s93qphc2rc.apps.googleusercontent.com',
+    callback: () => {}
+  });
+  console.log(google.accounts.id);
+}
+</script>
+</body>
+</html>

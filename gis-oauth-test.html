@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+<button onclick="getToken()">Get Token</button>
+<script>
+  let tokenClient;
+  function getToken() {
+    if (!tokenClient) {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: '437784650725-knunaeion9kujr0ar872m4s93qphc2rc.apps.googleusercontent.com',
+        scope: 'https://www.googleapis.com/auth/drive.file',
+        callback: (tokenResponse) => {
+          if (tokenResponse && tokenResponse.access_token) {
+            console.log("Access Token: " + tokenResponse.access_token);
+          }
+        },
+      });
+    }
+    tokenClient.requestAccessToken();
+  }
+</script>
+</body>
+</html>

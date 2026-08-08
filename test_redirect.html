@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDXw0YCqwkH0lfBLSxUM8ZC61MDntRixbI",
+    authDomain: "gen-lang-client-0531769124.firebaseapp.com",
+    projectId: "gen-lang-client-0531769124"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithRedirect(provider);
+</script>
+</body>
+</html>

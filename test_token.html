@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+<button onclick="login()">Login</button>
+<script>
+  let tokenClient;
+  function login() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: '437784650725-knunaeion9kujr0ar872m4s93qphc2rc.apps.googleusercontent.com',
+      scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+      prompt: 'select_account',
+      callback: async (response) => {
+        if (response.access_token) {
+          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${response.access_token}` }
+          });
+          const user = await res.json();
+          console.log(user);
+        }
+      }
+    });
+    tokenClient.requestAccessToken();
+  }
+</script>
+</body>
+</html>
