@@ -3194,7 +3194,12 @@ function triggerFederatedLogin(providerName) {
     const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'google\')"]');
     if (btn) btn.innerHTML = '<span class="loader" style="border-color:#000;border-bottom-color:transparent"></span> Connecting...';
 
-    (function(){ const p = new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' }); return auth.signInWithPopup(p); })().then((result) => {
+    (function(){ 
+      if (auth.currentUser) auth.signOut();
+      const p = new firebase.auth.GoogleAuthProvider(); 
+      p.setCustomParameters({ prompt: 'select_account' }); 
+      return auth.signInWithPopup(p); 
+    })().then((result) => {
       const user = result.user;
       submitInlineAuth(user.displayName || 'User', user.email, user.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', 'google');
     }).catch((error) => {
