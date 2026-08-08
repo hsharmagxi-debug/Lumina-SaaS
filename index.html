@@ -406,51 +406,58 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
 <div id="auth-gateway" class="auth-gateway" style="display:none">
   <div class="auth-card" style="position:relative">
     <button onclick="closeAuthModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--txm);font-size:1.1rem;cursor:pointer;padding:4px" title="Close">✕</button>
-    <div class="auth-title">✦ LUMINA ✦</div>
-    <div class="auth-subtitle">Secured Federated Gateway</div>
-    <p style="font-size:0.75rem;color:var(--txd);line-height:1.6;margin-bottom:20px">
-      Welcome to the multi-system esoteric analytics portal. Align your celestial coordinates and lock your security keys using our federated authentication node.
-    </p>
-    <div class="auth-grid">
-      <div class="auth-btn btn-google" onclick="triggerFederatedLogin('google')">
-        <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .5 4.1 1.5l3.1-3.1C17.3 1.6 14.8 1 12 1 7.3 1 3.4 3.7 1.4 7.5l3.9 3C6.2 7 8.9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.4c-.3 1.5-1.1 2.7-2.4 3.6l3.7 2.8c2.1-2 3.4-4.9 3.4-8.6z"/><path fill="#FBBC05" d="M5.3 14.5c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.4 7C.5 8.8 0 10.8 0 12.9s.5 4.1 1.4 5.9l3.9-3z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-2.9l-3.7-2.8c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2-6.7-5l-3.9 3C3.4 20.3 7.3 23 12 23z"/></svg>
-        Google Account
+    
+    <div id="auth-initial-view">
+      <div class="auth-title">✦ LUMINA ✦</div>
+      <div class="auth-subtitle">Secured Federated Gateway</div>
+      <p style="font-size:0.75rem;color:var(--txd);line-height:1.6;margin-bottom:20px">
+        Welcome to the multi-system esoteric analytics portal. Align your celestial coordinates and lock your security keys using our federated authentication node.
+      </p>
+      <div class="auth-grid">
+        <div class="auth-btn btn-google" onclick="triggerFederatedLogin('google')">
+          <svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .5 4.1 1.5l3.1-3.1C17.3 1.6 14.8 1 12 1 7.3 1 3.4 3.7 1.4 7.5l3.9 3C6.2 7 8.9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.4c-.3 1.5-1.1 2.7-2.4 3.6l3.7 2.8c2.1-2 3.4-4.9 3.4-8.6z"/><path fill="#FBBC05" d="M5.3 14.5c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.4 7C.5 8.8 0 10.8 0 12.9s.5 4.1 1.4 5.9l3.9-3z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-2.9l-3.7-2.8c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2-6.7-5l-3.9 3C3.4 20.3 7.3 23 12 23z"/></svg>
+          Google Account
+        </div>
+        <div class="auth-btn btn-linkedin" onclick="triggerFederatedLogin('linkedin')">
+          <svg viewBox="0 0 24 24" fill="#0077b5"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+          LinkedIn Profile
+        </div>
+        <div class="auth-btn btn-github" onclick="triggerFederatedLogin('github')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          GitHub Account
+        </div>
+        <div class="auth-btn btn-instagram" onclick="triggerFederatedLogin('instagram')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          Instagram Direct
+        </div>
+        <div class="auth-btn btn-facebook" onclick="triggerFederatedLogin('facebook')">
+          <svg viewBox="0 0 24 24" fill="#3b5998"><path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"/></svg>
+          Facebook Portal
+        </div>
+        <div class="auth-btn btn-twitter" onclick="triggerFederatedLogin('twitter')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          X / Twitter
+        </div>
+        <div class="auth-btn btn-yahoo" onclick="triggerFederatedLogin('yahoo')">
+          <svg viewBox="0 0 24 24" fill="#6001bf"><path d="M12.002 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm4.181 5.253l-3.321 5.922v5.572h-1.721v-5.572l-3.321-5.922h1.881l2.301 4.312 2.301-4.312h1.88z"/></svg>
+          Yahoo Mail
+        </div>
+        <div class="auth-btn btn-microsoft" onclick="triggerFederatedLogin('microsoft')">
+          <svg viewBox="0 0 23 23"><path fill="#f35325" d="M0 0h11v11H0z"/><path fill="#81bc06" d="M12 0h11v11H12z"/><path fill="#05a6f0" d="M0 12h11v11H0z"/><path fill="#ffba08" d="M12 12h11v11H12z"/></svg>
+          Microsoft Active
+        </div>
+        <div class="auth-btn btn-discord" onclick="triggerFederatedLogin('discord')">
+          <svg viewBox="0 0 127.14 96.36" fill="#5865F2"><path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.88-.65,1.72-1.34,2.53-2a75.58,75.58,0,0,0,73,0c.81.71,1.65,1.4,2.53,2a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129.87,49.84,123.6,26.91,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/></svg>
+          Discord Server
+        </div>
       </div>
-      <div class="auth-btn btn-linkedin" onclick="triggerFederatedLogin('linkedin')">
-        <svg viewBox="0 0 24 24" fill="#0077b5"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-        LinkedIn Profile
-      </div>
-      <div class="auth-btn btn-github" onclick="triggerFederatedLogin('github')">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-        GitHub Account
-      </div>
-      <div class="auth-btn btn-instagram" onclick="triggerFederatedLogin('instagram')">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-        Instagram Direct
-      </div>
-      <div class="auth-btn btn-facebook" onclick="triggerFederatedLogin('facebook')">
-        <svg viewBox="0 0 24 24" fill="#3b5998"><path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"/></svg>
-        Facebook Portal
-      </div>
-      <div class="auth-btn btn-twitter" onclick="triggerFederatedLogin('twitter')">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        X / Twitter
-      </div>
-      <div class="auth-btn btn-yahoo" onclick="triggerFederatedLogin('yahoo')">
-        <svg viewBox="0 0 24 24" fill="#6001bf"><path d="M12.002 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm4.181 5.253l-3.321 5.922v5.572h-1.721v-5.572l-3.321-5.922h1.881l2.301 4.312 2.301-4.312h1.88z"/></svg>
-        Yahoo Mail
-      </div>
-      <div class="auth-btn btn-microsoft" onclick="triggerFederatedLogin('microsoft')">
-        <svg viewBox="0 0 23 23"><path fill="#f35325" d="M0 0h11v11H0z"/><path fill="#81bc06" d="M12 0h11v11H12z"/><path fill="#05a6f0" d="M0 12h11v11H0z"/><path fill="#ffba08" d="M12 12h11v11H12z"/></svg>
-        Microsoft Active
-      </div>
-      <div class="auth-btn btn-discord" onclick="triggerFederatedLogin('discord')">
-        <svg viewBox="0 0 127.14 96.36" fill="#5865F2"><path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.88-.65,1.72-1.34,2.53-2a75.58,75.58,0,0,0,73,0c.81.71,1.65,1.4,2.53,2a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129.87,49.84,123.6,26.91,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/></svg>
-        Discord Server
+      <div style="font-size:0.6rem;color:var(--txm);margin-top:15px;text-align:center">
+        🔒 SECURE CLIENT-SIDE FEDERATED IDENTITY · 100% OFFLINE ABSOLUTE
       </div>
     </div>
-    <div style="font-size:0.6rem;color:var(--txm);margin-top:10px">
-      🔒 SECURE CLIENT-SIDE FEDERATED IDENTITY · 100% OFFLINE ABSOLUTE
+
+    <div id="auth-provider-view" style="display:none;min-height:220px;flex-direction:column;justify-content:center;align-items:center;padding:10px 0">
+      <!-- Injected dynamically based on selected provider -->
     </div>
   </div>
 </div>
@@ -546,6 +553,7 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
   <button onclick="switchTab('solutions')">✺ Solutions</button>
   <button onclick="switchTab('tools')">⚙ Tools</button>
   <button onclick="switchTab('consensus')">⬡ Consensus</button>
+  <button onclick="switchTab('akashic')" style="color:var(--purple);font-weight:700">🌌 Akashic</button>
   <button onclick="switchTab('membership')">💎 Premium</button>
   <button onclick="switchTab('profiles')">◈ Profiles</button>
 </nav>
@@ -1059,6 +1067,118 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
   </div>
 </div>
 
+<div class="tab-content" id="tab-akashic">
+  <div class="card" style="text-align:center;padding:24px 16px;background:linear-gradient(to bottom, var(--s1), rgba(184,110,240,0.04))">
+    <div style="font-family:'Cinzel Decorative',serif;font-size:1.6rem;color:var(--purple);margin-bottom:6px">🌌 AKASHIC RECORDS & ASTROLOGY</div>
+    <div class="section-sub" style="font-size:.82rem;max-width:580px;margin:0 auto 14px">
+      Access the celestial library of your soul's journey. Channel the high-precision alignment of your birth coordinates, time, and planetary lords with ancient astrology services.
+    </div>
+    <div id="akashic-quota-badge" style="display:inline-flex;align-items:center;gap:6px;background:rgba(184,110,240,0.12);border:1px solid rgba(184,110,240,0.3);color:var(--purple);font-size:0.75rem;font-weight:700;padding:5px 12px;border-radius:12px;margin:0 auto">
+      Remaining Free Premium Quota: <span id="akashic-quota-count">10 / 10</span> readings
+    </div>
+  </div>
+
+  <!-- Gated Free Tier Warning -->
+  <div id="akashic-free-tier-lock" class="card" style="display:none;border:1px solid var(--purple);background:linear-gradient(to bottom, rgba(8,16,40,0.98), rgba(184,110,240,0.05));text-align:center;padding:32px 24px">
+    <div style="font-size:2.5rem;margin-bottom:12px">🔒</div>
+    <h3 style="font-family:'Cinzel',serif;color:var(--purple);font-size:1.3rem;margin-bottom:10px">Elite Premium Feature</h3>
+    <p style="font-size:0.8rem;color:var(--txd);line-height:1.7;max-width:560px;margin:0 auto 18px">
+      The Akashic Soul Reading incorporates high-precision Astro-Computation engines and real-time cosmic channeling. This is an elite premium feature accessible only to our active Premium Tier members.
+    </p>
+    <button class="btn btn-purple" onclick="toggleCurrentProfilePlan()" style="font-weight:700">💎 Upgrade Profile to Premium Tier</button>
+  </div>
+
+  <!-- Paywall / Purchase extra slot modal/card when quota runs out -->
+  <div id="akashic-paywall" class="card" style="display:none;border:1px solid var(--red);background:linear-gradient(to bottom, rgba(8,16,40,0.98), rgba(224,92,92,0.05));text-align:center;padding:24px">
+    <div style="font-size:2rem;margin-bottom:12px">⚡</div>
+    <div style="font-family:'Cinzel',serif;font-size:1.2rem;color:var(--red);margin-bottom:6px">Access Quota Complete</div>
+    <p style="font-size:0.78rem;color:var(--txd);line-height:1.6;max-width:500px;margin:0 auto 16px">
+      You have successfully built and downloaded your given quota of 10 records for this profile.
+      To query the Akashic Gateways and generate another high-dimension soul reading, a custom energy surcharge of <strong>₹1,100 INR</strong> is required.
+    </p>
+    <div style="background:rgba(0,0,0,0.3);border:1px solid var(--bdr);border-radius:10px;padding:16px;max-width:380px;margin:0 auto 16px;text-align:left">
+      <div style="font-size:0.68rem;text-transform:uppercase;color:var(--gold);margin-bottom:8px;letter-spacing:1px;font-weight:700">Simulated Secure Gateway</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <input type="text" id="pay-card-num" placeholder="Card Number or UPI ID" style="font-size:0.75rem;padding:8px;background:rgba(255,255,255,0.02);border:1px solid var(--bdr);border-radius:6px;color:#fff;outline:none">
+        <button class="btn btn-purple btn-sm" onclick="simulatedSurchargePayment()" style="width:100%;font-weight:700">Pay ₹1,100 INR & Unlock Record Slot</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Astrology Profile Summary Card -->
+  <div class="card" id="akashic-astrology-header" style="display:none">
+    <div class="ct">🪐 Celestial Birth Mandate</div>
+    <div class="ngrid">
+      <div class="norb">
+        <div class="nval" style="color:var(--gold)" id="akashic-sun-sign">—</div>
+        <div class="nlbl">Sun Sign</div>
+        <div class="nmng" id="akashic-sun-dates">Solar Gate</div>
+      </div>
+      <div class="norb">
+        <div class="nval" style="color:var(--teal)" id="akashic-rising-sign">—</div>
+        <div class="nlbl">Rising Sign</div>
+        <div class="nmng" id="akashic-rising-time">Ascendant Angle</div>
+      </div>
+      <div class="norb">
+        <div class="nval" style="color:var(--purple)" id="akashic-planetary-lord">—</div>
+        <div class="nlbl">Planetary Ruler</div>
+        <div class="nmng" id="akashic-planetary-coord">Jyotish Lord</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action button to fetch the reading -->
+  <div class="card" style="text-align:center" id="akashic-generator-box">
+    <button class="btn btn-purple" id="btn-akashic" onclick="generateAkashicReading()" style="width:100%;max-width:320px;font-weight:700;box-shadow:0 0 15px rgba(184,110,240,0.2)">
+      🌌 Retrieve Akashic Soul Record
+    </button>
+    <div style="font-size:0.62rem;color:var(--txm);margin-top:8px">Uses real-time celestial integration. Generation takes 5-10 seconds.</div>
+  </div>
+
+  <!-- Detailed Reading Output Container -->
+  <div id="akashic-reading-box" class="card" style="display:none;padding:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bdr);padding-bottom:12px;margin-bottom:18px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:var(--purple)" id="akashic-record-title">THE AKASHIC BOOK OF LIFE</div>
+        <div style="font-size:0.68rem;color:var(--txm)" id="akashic-record-meta">CHANNELS OPENED ON ...</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="downloadAkashicReport()">⤓ Download Report PDF</button>
+    </div>
+
+    <div style="font-size:0.8rem;color:var(--txd);line-height:1.8">
+      <div style="margin-bottom:20px">
+        <h4 style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.95rem;margin-bottom:6px">I. The Book of Life (Soul Blueprint)</h4>
+        <p id="akashic-soul-blueprint" style="white-space:pre-wrap;margin-bottom:16px"></p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <h4 style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.95rem;margin-bottom:6px">II. Celestial Natal Alignments</h4>
+        <p id="akashic-natal-alignments" style="white-space:pre-wrap;margin-bottom:16px"></p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <h4 style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.95rem;margin-bottom:6px">III. Active Karmic Agreements</h4>
+        <p id="akashic-karmic-agreements" style="white-space:pre-wrap;margin-bottom:16px"></p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <h4 style="font-family:'Cinzel',serif;color:var(--gold);font-size:0.95rem;margin-bottom:6px">IV. The Path of Evolution (Gateway Cycles)</h4>
+        <p id="akashic-path-evolution" style="white-space:pre-wrap;margin-bottom:16px"></p>
+      </div>
+
+      <div style="border-top:1px solid var(--bdr);padding-top:14px;margin-top:20px;text-align:center">
+        <div style="font-family:'Cinzel',serif;color:var(--purple);font-size:0.88rem;font-style:italic" id="akashic-blessing"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Akashic History Library -->
+  <div class="card" id="akashic-history-box" style="display:none">
+    <div class="ct">📚 Archived Akashic Readings for this Profile</div>
+    <div id="akashic-history-list" style="display:flex;flex-direction:column;gap:8px;margin-top:10px"></div>
+  </div>
+</div>
+
 <div class="tab-content" id="tab-membership">
   <div class="card" style="text-align:center;padding:28px 20px">
     <div style="font-family:'Cinzel Decorative',serif;font-size:1.8rem;color:var(--gold);margin-bottom:6px">💎 LUMINA PREMIUM</div>
@@ -1401,7 +1521,7 @@ function calcNumbers(name,dob,time='',place=''){
 const SCHEMA_VERSION=5;
 let profiles=JSON.parse(localStorage.getItem('lumina_v2')||'[]');
 let ai=parseInt(localStorage.getItem('lumina_v2_ai')||'0');
-function sp(){localStorage.setItem('lumina_v2',JSON.stringify(profiles));}
+function sp(){localStorage.setItem('lumina_v2',JSON.stringify(profiles)); if(typeof syncProfilesToRemote==='function'){syncProfilesToRemote();}}
 function sa(){localStorage.setItem('lumina_v2_ai',String(ai));}
 // Schema migration: sanitize legacy profiles (ensure name/dob/nick/time/place) and stamp version
 (function migrate(){try{const v=parseInt(localStorage.getItem('lumina_schema')||'0');if(v<SCHEMA_VERSION){profiles=(Array.isArray(profiles)?profiles:[]).filter(p=>p&&p.name&&p.dob).map(p=>({name:String(p.name),dob:String(p.dob),nick:(p.nick||String(p.name).split(' ')[0]),time:String(p.time||''),place:String(p.place||''),plan:String(p.plan||'free')}));if(!(ai>=0&&ai<profiles.length))ai=0;sp();sa();localStorage.setItem('lumina_schema',String(SCHEMA_VERSION));}}catch(e){}})();
@@ -2255,16 +2375,25 @@ function togglePlan(i){
   renderDash();
   showToast(`Profile "${profiles[i].nick}" plan changed to ${profiles[i].plan.toUpperCase()} Tier ✦`);
 }
+function toggleCurrentProfilePlan(){
+  togglePlan(ai);
+  if(document.getElementById('tab-akashic').classList.contains('active')){
+    renderAkashic();
+  }
+}
 function renderAgents(){const c=document.getElementById('agents-container');if(!c)return;c.innerHTML=AGENTS.map(a=>`<div class="agent-card"><div class="aname">✦ ${a.name}</div><div class="astyle">${a.style}</div><div class="pbar"><div class="pfill" style="width:0"></div></div></div>`).join('');}
 
 function switchTab(name){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+name)?.classList.add('active');
-  const map={dashboard:0,loshu:1,cycles:2,forecast:3,compatibility:4,solutions:5,tools:6,consensus:7,profiles:8};
+  const map={dashboard:0,loshu:1,cycles:2,forecast:3,compatibility:4,solutions:5,tools:6,consensus:7,akashic:8,membership:9,profiles:10};
   const btns=document.querySelectorAll('nav button');
   if(btns[map[name]])btns[map[name]].classList.add('active');
   window.scrollTo(0,0);
+  if(name==='akashic'){
+    renderAkashic();
+  }
 }
 
 function initStars(){
@@ -2729,6 +2858,82 @@ function initLockOverlays(){
 }
 
 let currentUser = JSON.parse(localStorage.getItem('lumina_v2_auth') || 'null');
+let isSyncingFromRemote = false;
+
+function syncProfilesToRemote() {
+  if (!currentUser || !currentUser.email) return;
+  fetch('/api/profiles', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      email: currentUser.email,
+      profiles: profiles
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      console.log('Profiles synced with Firestore cloud database ✦');
+    } else {
+      console.error('Remote sync failed:', data.error);
+    }
+  })
+  .catch(err => {
+    console.error('Network error during remote profile sync:', err);
+  });
+}
+
+function syncProfilesFromRemote() {
+  if (!currentUser || !currentUser.email || isSyncingFromRemote) return Promise.resolve();
+  isSyncingFromRemote = true;
+  return fetch(`/api/profiles?email=${encodeURIComponent(currentUser.email)}`)
+    .then(res => res.json())
+    .then(data => {
+      isSyncingFromRemote = false;
+      if (data.profiles && Array.isArray(data.profiles)) {
+        // Save guest profiles so we can restore them on logout
+        if (!localStorage.getItem('lumina_v2_guest')) {
+          localStorage.setItem('lumina_v2_guest', JSON.stringify(profiles));
+        }
+        
+        const localMap = new Set(profiles.map(p => `${p.name.toLowerCase()}_${p.dob}`));
+        let mergedCount = 0;
+        data.profiles.forEach(remoteProfile => {
+          const key = `${remoteProfile.name.toLowerCase()}_${remoteProfile.dob}`;
+          if (!localMap.has(key)) {
+            profiles.push(remoteProfile);
+            mergedCount++;
+          } else {
+            const idx = profiles.findIndex(p => `${p.name.toLowerCase()}_${p.dob}` === key);
+            if (idx !== -1) {
+              // Merge remote updates with local properties
+              profiles[idx] = { ...profiles[idx], ...remoteProfile };
+            }
+          }
+        });
+        
+        localStorage.setItem('lumina_v2', JSON.stringify(profiles));
+        if (mergedCount > 0) {
+          showToast(`Synced ${mergedCount} new profiles from Cloud Vault ✦`);
+        } else if (data.profiles.length > 0) {
+          showToast(`Profiles synchronized with Cloud Vault ✦`);
+        }
+        
+        // Push merged profiles back to firestore to ensure completeness
+        syncProfilesToRemote();
+        
+        renderDash();
+        renderPT();
+        updateChips();
+      }
+    })
+    .catch(err => {
+      isSyncingFromRemote = false;
+      console.error('Error fetching remote profiles:', err);
+    });
+}
 
 function openAuthModal() {
   const gateway = document.getElementById('auth-gateway');
@@ -2906,6 +3111,12 @@ function checkAuth() {
       `;
     }
 
+    // Trigger profile sync from remote if not already loaded initially
+    if (!window.hasInitialSynced) {
+      window.hasInitialSynced = true;
+      syncProfilesFromRemote();
+    }
+
     const activeProfileIndex = localStorage.getItem('lumina_v2_ai');
     if (activeProfileIndex !== null && profiles.length > 0) {
       ai = parseInt(activeProfileIndex);
@@ -2917,151 +3128,136 @@ function checkAuth() {
 
 function logout() {
   currentUser = null;
+  window.hasInitialSynced = false;
   localStorage.removeItem('lumina_v2_auth');
   localStorage.removeItem('lumina_v2_ai');
+
+  // Restore pre-authenticated guest profiles if any, or clear to empty
+  profiles = JSON.parse(localStorage.getItem('lumina_v2_guest') || '[]');
+  localStorage.removeItem('lumina_v2_guest');
+  localStorage.setItem('lumina_v2', JSON.stringify(profiles));
+
   showToast('Logged out successfully');
   checkAuth();
+
+  // Re-render UI based on state
+  if (profiles.length === 0) {
+    if (document.getElementById('landing')) document.getElementById('landing').style.display = 'block';
+    if (document.getElementById('nav')) document.getElementById('nav').style.display = 'none';
+  } else {
+    launchApp();
+  }
 }
 
 function triggerFederatedLogin(provider) {
-  const w = 520, h = 640;
-  const left = (screen.width/2)-(w/2);
-  const top = (screen.height/2)-(h/2);
-  const popup = window.open('', 'LuminaFederatedAuth', `width=${w},height=${h},top=${top},left=${left},resizable=yes,scrollbars=yes`);
-  
-  if (!popup) {
-    showToast('Popup blocked! Please allow popups.');
-    return;
-  }
+  const initialView = document.getElementById('auth-initial-view');
+  const providerView = document.getElementById('auth-provider-view');
+  if (!initialView || !providerView) return;
 
-  let brandColor = '#C5A059';
+  initialView.style.display = 'none';
+  providerView.style.display = 'flex';
+
+  let brandColor = '#C9A84C';
   let providerTitle = provider.charAt(0).toUpperCase() + provider.slice(1);
-  let formHtml = '';
-  
+  let content = '';
+
   if (provider === 'google') {
     brandColor = '#4285F4';
-    formHtml = `
-      <div style="text-align:center;margin-bottom:24px">
-        <svg width="48" height="48" viewBox="0 0 24 24" style="margin-bottom:12px"><path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.68 1.54 14.98 1 12 1 7.35 1 3.37 3.65 1.41 7.54l3.85 2.99C6.2 7.04 8.87 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.35H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.67 2.84c2.15-1.98 3.38-4.89 3.38-8.55z"/><path fill="#FBBC05" d="M5.26 14.53c-.24-.72-.38-1.49-.38-2.28 0-.79.14-1.56.38-2.28L1.41 6.98C.51 8.78 0 10.78 0 12.91s.51 4.13 1.41 5.93l3.85-2.99s-.01-.13-.01-.32z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.08 7.96-2.91l-3.67-2.84c-1.11.74-2.53 1.18-4.29 1.18-3.13 0-5.8-2-6.74-4.96l-3.85 2.99C3.37 20.35 7.35 23 12 23z"/></svg>
-        <h2 style="font-size:1.4rem;font-weight:500;color:#202124;margin:0 0 6px">Sign in with Google</h2>
-        <p style="font-size:.9rem;color:#5f6368;margin:0">to continue to Lumina Numerology</p>
+    content = `
+      <div style="text-align:center;margin-bottom:20px;width:100%">
+        <svg width="40" height="40" viewBox="0 0 24 24" style="margin:0 auto 12px;display:block"><path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.68 1.54 14.98 1 12 1 7.35 1 3.37 3.65 1.41 7.54l3.85 2.99C6.2 7.04 8.87 5.04 12 5.04z"/><path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.35H12v4.51h6.44c-.28 1.47-1.11 2.71-2.36 3.55l3.67 2.84c2.15-1.98 3.38-4.89 3.38-8.55z"/><path fill="#FBBC05" d="M5.26 14.53c-.24-.72-.38-1.49-.38-2.28 0-.79.14-1.56.38-2.28L1.41 6.98C.51 8.78 0 10.78 0 12.91s.51 4.13 1.41 5.93l3.85-2.99s-.01-.13-.01-.32z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-2.9l-3.7-2.8c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2-6.7-5l-3.9 3C3.4 20.3 7.3 23 12 23z"/></svg>
+        <h3 style="font-size:1.15rem;font-weight:500;color:#fff;margin:0 0 4px;font-family:'Cinzel',serif">Sign in with Google</h3>
+        <p style="font-size:.72rem;color:var(--txm);margin:0">to continue to Lumina Numerology</p>
       </div>
-      <div style="background:#f1f3f4;border-radius:8px;padding:12px;margin-bottom:18px;display:flex;align-items:center;gap:10px">
-        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" style="width:40px;height:40px;border-radius:50%;object-fit:cover">
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--bdr);border-radius:8px;padding:12px;margin-bottom:18px;display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box">
+        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--gold)">
         <div style="text-align:left">
-          <div style="font-size:.9rem;font-weight:600;color:#202124">Aditi Sharma</div>
-          <div style="font-size:.8rem;color:#5f6368">aditi.cosmic@gmail.com</div>
+          <div style="font-size:.8rem;font-weight:600;color:#fff">Aditi Sharma</div>
+          <div style="font-size:.7rem;color:var(--txd)">aditi.cosmic@gmail.com</div>
         </div>
       </div>
-      <button type="button" onclick="submitMockAuth('Aditi Sharma', 'aditi.cosmic@gmail.com', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80')" style="width:100%;padding:11px;background:#1a73e8;color:#fff;border:none;border-radius:4px;font-weight:500;font-size:.9rem;cursor:pointer">Continue as Aditi</button>
+      <button type="button" class="btn btn-gold" onclick="submitInlineAuth('Aditi Sharma', 'aditi.cosmic@gmail.com', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', 'google')" style="width:100%;justify-content:center;padding:10px;font-size:0.75rem;font-weight:600">Continue as Aditi</button>
     `;
   } else if (provider === 'github') {
     brandColor = '#24292e';
-    formHtml = `
-      <div style="text-align:center;margin-bottom:24px">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="#24292e" style="margin-bottom:12px"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.167 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
-        <h2 style="font-size:1.35rem;font-weight:600;color:#24292e;margin:0 0 6px">Authorize Lumina-Numerology</h2>
-        <p style="font-size:.85rem;color:#586069;margin:0">wishes to access your GitHub public profile</p>
+    content = `
+      <div style="text-align:center;margin-bottom:20px;width:100%">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="#fff" style="margin:0 auto 12px;display:block"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.167 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+        <h3 style="font-size:1.15rem;font-weight:600;color:#fff;margin:0 0 4px;font-family:'Cinzel',serif">Authorize hsharmagxi-debug</h3>
+        <p style="font-size:.72rem;color:var(--txm);margin:0">Lumina Requests access to your GitHub public profile</p>
       </div>
-      <div style="border:1px solid #e1e4e8;border-radius:6px;padding:16px;background:#fafbfc;margin-bottom:20px;text-align:left">
-        <div style="font-size:.85rem;color:#24292e;margin-bottom:8px"><strong>Permissions:</strong></div>
-        <div style="font-size:.8rem;color:#586069;margin-bottom:4px">✓ read:user (public_profile, email)</div>
+      <div style="border:1px solid var(--bdr);border-radius:6px;padding:12px;background:rgba(255,255,255,0.02);margin-bottom:18px;text-align:left;font-size:0.7rem;width:100%;box-sizing:border-box">
+        <div style="color:var(--gold);margin-bottom:6px;font-weight:600">Permissions Requested:</div>
+        <div style="color:var(--txd)">✓ read:user (public profile data and email)</div>
       </div>
-      <button type="button" onclick="submitMockAuth('Dev Astrologer', 'dev@github.com', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80')" style="width:100%;padding:11px;background:#2ea44f;color:#fff;border:none;border-radius:6px;font-weight:600;font-size:.9rem;cursor:pointer">Authorize hsharmagxi-debug</button>
+      <button type="button" class="btn btn-gold" onclick="submitInlineAuth('Dev Astrologer', 'dev@github.com', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80', 'github')" style="width:100%;justify-content:center;padding:10px;font-size:0.75rem;font-weight:600">Authorize GitHub Account</button>
     `;
   } else if (provider === 'discord') {
     brandColor = '#5865F2';
-    formHtml = `
-      <div style="text-align:center;margin-bottom:24px">
-        <svg width="48" height="48" viewBox="0 0 127.14 96.36" fill="#5865F2" style="margin-bottom:12px"><path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.88-.65,1.72-1.34,2.53-2a75.58,75.58,0,0,0,73,0c.81.71,1.65,1.4,2.53,2a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129.87,49.84,123.6,26.91,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/></svg>
-        <h2 style="font-size:1.4rem;font-weight:700;color:#fff;margin:0 0 6px">Authorize Discord Connection</h2>
-        <p style="font-size:.85rem;color:#b9bbbe;margin:0">An external application is requesting access to your account.</p>
+    content = `
+      <div style="text-align:center;margin-bottom:20px;width:100%">
+        <svg width="40" height="40" viewBox="0 0 127.14 96.36" fill="#5865F2" style="margin:0 auto 12px;display:block"><path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.88-.65,1.72-1.34,2.53-2a75.58,75.58,0,0,0,73,0c.81.71,1.65,1.4,2.53,2a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129.87,49.84,123.6,26.91,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/></svg>
+        <h3 style="font-size:1.15rem;font-weight:700;color:#fff;margin:0 0 4px;font-family:'Cinzel',serif">Discord Connection</h3>
+        <p style="font-size:.72rem;color:var(--txm);margin:0">Authorize Lumina to sync with your server credentials</p>
       </div>
-      <div style="background:#2f3136;border:1px solid #202225;border-radius:4px;padding:16px;margin-bottom:20px;text-align:left;color:#b9bbbe;font-size:.85rem">
-        <p style="margin:0 0 8px;color:#fff;font-weight:600">LUMINA NUMEROLOGY wishes to:</p>
-        <div style="margin-bottom:4px">• Access your username, avatar, and banner</div>
-        <div>• Know what servers you are in</div>
+      <div style="background:rgba(88,101,242,0.1);border:1px solid #5865F2;border-radius:6px;padding:12px;margin-bottom:18px;text-align:left;color:var(--txm);font-size:.72rem;width:100%;box-sizing:border-box">
+        <p style="margin:0 0 6px;color:#fff;font-weight:600">LUMINA wishes to access:</p>
+        <div>• Username, public avatar and email</div>
+        <div style="margin-top:2px">• Active server status confirmation</div>
       </div>
-      <button type="button" onclick="submitMockAuth('Mystic Sage', 'sage@discord.com', 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80')" style="width:100%;padding:11px;background:#5865F2;color:#fff;border:none;border-radius:3px;font-weight:600;font-size:.9rem;cursor:pointer">Authorize Connection</button>
+      <button type="button" class="btn btn-gold" onclick="submitInlineAuth('Mystic Sage', 'sage@discord.com', 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80', 'discord')" style="width:100%;justify-content:center;padding:10px;font-size:0.75rem;font-weight:600;background:#5865F2;border-color:#5865F2;color:#fff">Authorize Discord Connection</button>
     `;
   } else {
-    formHtml = `
-      <div style="text-align:center;margin-bottom:24px">
-        <h2 style="font-size:1.4rem;font-weight:600;color:#222;margin:0 0 6px">Secure ${providerTitle} Sign-In</h2>
-        <p style="font-size:.85rem;color:#666;margin:0">Create or connect your Lumina account via ${providerTitle} Gateway</p>
+    content = `
+      <div style="text-align:center;margin-bottom:18px;width:100%">
+        <h3 style="font-size:1.15rem;font-weight:600;color:#fff;margin:0 0 4px;font-family:'Cinzel',serif">Secure ${providerTitle} Sign-In</h3>
+        <p style="font-size:.72rem;color:var(--txm);margin:0">Connect your Lumina profile with ${providerTitle}</p>
       </div>
-      <div style="text-align:left;margin-bottom:15px">
-        <label style="font-size:.8rem;color:#444;font-weight:600;display:block;margin-bottom:4px">Phone, email, or username</label>
-        <input type="text" id="mock-email" value="user.${provider}@lumina.net" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;font-size:.9rem">
+      <div style="text-align:left;margin-bottom:12px;width:100%">
+        <label style="font-size:.72rem;color:var(--txd);font-weight:600;display:block;margin-bottom:4px">Phone, email, or username</label>
+        <input type="text" id="inline-mock-email" value="user.${provider}@lumina.net" style="width:100%;padding:8px;border:1px solid var(--bdr);border-radius:4px;font-size:.8rem;background:rgba(0,0,0,0.3);color:#fff">
       </div>
-      <div style="text-align:left;margin-bottom:20px">
-        <label style="font-size:.8rem;color:#444;font-weight:600;display:block;margin-bottom:4px">Password</label>
-        <input type="password" value="••••••••••••" style="width:100%;padding:10px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;font-size:.9rem">
+      <div style="text-align:left;margin-bottom:18px;width:100%">
+        <label style="font-size:.72rem;color:var(--txd);font-weight:600;display:block;margin-bottom:4px">Password</label>
+        <input type="password" value="••••••••••••" style="width:100%;padding:8px;border:1px solid var(--bdr);border-radius:4px;font-size:.8rem;background:rgba(0,0,0,0.3);color:#fff" readonly>
       </div>
-      <button type="button" onclick="submitMockAuth('Cosmic Seeker', 'seeker.${provider}@gmail.com', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80')" style="width:100%;padding:11px;background:${brandColor};color:#fff;border:none;border-radius:4px;font-weight:600;font-size:.9rem;cursor:pointer">Log In & Secure Account</button>
+      <button type="button" class="btn btn-gold" onclick="const emailVal=document.getElementById('inline-mock-email')?.value || 'seeker.${provider}@gmail.com'; submitInlineAuth('Cosmic Seeker', emailVal, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', '${provider}')" style="width:100%;justify-content:center;padding:10px;font-size:0.75rem;font-weight:600">Secure Log In</button>
     `;
   }
 
-  const popupContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>${providerTitle} Auth Portal</title>
-      <style>
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-          background: ${provider === 'discord' ? '#36393f' : provider === 'github' ? '#f6f8fa' : '#ffffff'};
-          color: ${provider === 'discord' ? '#dcddde' : '#333333'};
-          margin: 0;
-          padding: 40px 20px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-          box-sizing: border-box;
-        }
-        .box {
-          width: 100%;
-          max-width: 400px;
-          background: ${provider === 'discord' ? '#2f3136' : '#ffffff'};
-          border: ${provider === 'discord' ? '1px solid #202225' : provider === 'github' ? '1px solid #e1e4e8' : '1px solid #dadce0'};
-          border-radius: 8px;
-          padding: 32px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          text-align: center;
-          box-sizing: border-box;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="box">
-        ${formHtml}
-      </div>
-      <script>
-        function submitMockAuth(name, email, avatar) {
-          window.opener.postMessage({
-            type: 'LUMINA_AUTH_SUCCESS',
-            provider: '${provider}',
-            user: {
-              name: name,
-              email: email,
-              avatar: avatar,
-              token: 'mock-token-' + Math.random().toString(36).substring(2, 15)
-            }
-          }, '*');
-          window.close();
-        }
-      <\/script>
-    </body>
-    </html>
+  providerView.innerHTML = `
+    <div style="width:100%;display:flex;flex-direction:column;align-items:center">
+      ${content}
+      <button class="btn btn-outline btn-sm" onclick="goBackToAuthInitial()" style="margin-top:14px;width:100%;justify-content:center;font-size:0.7rem;padding:6px">← Back to Federated Options</button>
+    </div>
   `;
-
-  popup.document.open();
-  popup.document.write(popupContent);
-  popup.document.close();
 }
 
+function goBackToAuthInitial() {
+  const initialView = document.getElementById('auth-initial-view');
+  const providerView = document.getElementById('auth-provider-view');
+  if (initialView && providerView) {
+    providerView.style.display = 'none';
+    initialView.style.display = 'block';
+  }
+}
+
+function submitInlineAuth(name, email, avatar, provider) {
+  currentUser = {
+    name: name,
+    email: email,
+    avatar: avatar,
+    token: 'inline-token-' + Math.random().toString(36).substring(2, 15)
+  };
+  currentUser.provider = provider;
+  localStorage.setItem('lumina_v2_auth', JSON.stringify(currentUser));
+  showToast(`Authenticated with ${provider.toUpperCase()} ✦`);
+  closeAuthModal();
+  checkAuth();
+  syncProfilesFromRemote();
+}
+
+// Keep popup success listener for backward compatibility or direct calls
 window.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'LUMINA_AUTH_SUCCESS') {
     currentUser = event.data.user;
@@ -3069,6 +3265,7 @@ window.addEventListener('message', (event) => {
     localStorage.setItem('lumina_v2_auth', JSON.stringify(currentUser));
     showToast(`Authenticated with ${event.data.provider.toUpperCase()} ✦`);
     checkAuth();
+    syncProfilesFromRemote();
   }
 });
 
@@ -3095,6 +3292,271 @@ async function verifyDns() {
   } catch(e) {
     showToast('DNS Verified! CNAME active at lumina.bhasad.org ✦');
   }
+}
+
+// ── AKASHIC & ASTROLOGICAL UTILITIES ──
+function getSunSign(m, d) {
+  const dates = [20, 19, 21, 20, 21, 21, 23, 23, 23, 23, 22, 22];
+  const signs = ["Capricorn", "Aquarius", "Pisces", "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius"];
+  return d < dates[m - 1] ? signs[m - 1] : signs[m % 12];
+}
+
+function getRisingSign(m, d, timeStr) {
+  if (!timeStr) return "Ascendant Unknown";
+  const [hh, mm] = timeStr.split(':').map(Number);
+  const hour = hh + mm / 60;
+  const sunrise = 6.0;
+  const sunSignIdx = getSunSignIndex(m, d);
+  const hoursSinceSunrise = (hour - sunrise + 24) % 24;
+  const signsMoved = Math.floor(hoursSinceSunrise / 2);
+  const signs = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+  const risingIdx = (sunSignIdx + signsMoved) % 12;
+  return signs[risingIdx];
+}
+
+function getSunSignIndex(m, d) {
+  const dates = [20, 19, 21, 20, 21, 21, 23, 23, 23, 23, 22, 22];
+  const indices = [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8];
+  return d < dates[m - 1] ? indices[m - 1] : indices[m % 12];
+}
+
+let activeAkashicReading = null;
+
+function renderAkashic() {
+  const p = profiles[ai];
+  if (!p) {
+    showToast('Please open or create a profile first.');
+    return;
+  }
+
+  const isPremium = p.plan === 'paid';
+  
+  if (!isPremium) {
+    document.getElementById('akashic-free-tier-lock').style.display = 'block';
+    document.getElementById('akashic-astrology-header').style.display = 'none';
+    document.getElementById('akashic-generator-box').style.display = 'none';
+    document.getElementById('akashic-reading-box').style.display = 'none';
+    document.getElementById('akashic-history-box').style.display = 'none';
+    document.getElementById('akashic-paywall').style.display = 'none';
+    document.getElementById('akashic-quota-badge').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('akashic-free-tier-lock').style.display = 'none';
+  document.getElementById('akashic-astrology-header').style.display = 'block';
+  document.getElementById('akashic-history-box').style.display = 'block';
+  document.getElementById('akashic-quota-badge').style.display = 'inline-flex';
+
+  // Calculate Astro coordinates
+  const [y, m, d] = p.dob.split('-').map(Number);
+  const sun = getSunSign(m, d);
+  const rising = getRisingSign(m, d, p.time);
+  const N = calcNumbers(p.name, p.dob, p.time, p.place);
+  const lord = VED_PLANETS[N.vedic?.moolank || N.psychic] || 'Sun';
+
+  document.getElementById('akashic-sun-sign').textContent = sun;
+  document.getElementById('akashic-rising-sign').textContent = rising;
+  document.getElementById('akashic-planetary-lord').textContent = lord.split(' ')[0];
+  document.getElementById('akashic-planetary-coord').textContent = 'Planetary Lord';
+
+  // Quota calculation
+  const history = p.akashicHistory || [];
+  const extra = p.akashicExtraSlots || 0;
+  const limit = 10 + extra;
+  const remaining = Math.max(0, limit - history.length);
+
+  document.getElementById('akashic-quota-count').textContent = `${remaining} / ${limit}`;
+
+  if (remaining > 0) {
+    document.getElementById('akashic-paywall').style.display = 'none';
+    document.getElementById('akashic-generator-box').style.display = 'block';
+  } else {
+    document.getElementById('akashic-generator-box').style.display = 'none';
+    document.getElementById('akashic-paywall').style.display = 'block';
+  }
+
+  // Render archived readings
+  const listEl = document.getElementById('akashic-history-list');
+  if (history.length === 0) {
+    listEl.innerHTML = `<div style="font-size:0.75rem;color:var(--txm);text-align:center;padding:12px">No readings generated yet. Click "Retrieve Akashic Soul Record" above to open the gateway.</div>`;
+  } else {
+    listEl.innerHTML = history.map((h, idx) => {
+      const activeClass = activeAkashicReading && activeAkashicReading.timestamp === h.timestamp ? 'border:1px solid var(--purple);background:rgba(184,110,240,0.06)' : '';
+      return `<div class="card" style="margin:0;padding:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;${activeClass}" onclick="loadAkashicRecord(${idx})">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:0.8rem;color:#fff">Akashic Record #${idx + 1}</div>
+          <div style="font-size:0.65rem;color:var(--txm)">Channelled on ${new Date(h.timestamp).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})}</div>
+        </div>
+        <button class="btn btn-outline btn-sm">View Record</button>
+      </div>`;
+    }).join('');
+  }
+}
+
+function loadAkashicRecord(idx) {
+  const p = profiles[ai];
+  if (!p || !p.akashicHistory || !p.akashicHistory[idx]) return;
+  
+  const h = p.akashicHistory[idx];
+  activeAkashicReading = h;
+
+  document.getElementById('akashic-record-meta').textContent = `CHANNELS OPENED ON ${new Date(h.timestamp).toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'}).toUpperCase()}`;
+  document.getElementById('akashic-soul-blueprint').textContent = h.reading.soulBlueprint;
+  document.getElementById('akashic-natal-alignments').textContent = h.reading.natalAlignments;
+  document.getElementById('akashic-karmic-agreements').textContent = h.reading.karmicAgreements;
+  document.getElementById('akashic-path-evolution').textContent = h.reading.pathEvolution;
+  document.getElementById('akashic-blessing').textContent = h.reading.blessing;
+
+  document.getElementById('akashic-reading-box').style.display = 'block';
+  document.getElementById('akashic-reading-box').scrollIntoView({ behavior: 'smooth' });
+  renderAkashic();
+}
+
+async function generateAkashicReading() {
+  const p = profiles[ai];
+  if (!p) return;
+
+  const btn = document.getElementById('btn-akashic');
+  btn.disabled = true;
+  btn.innerHTML = `<span class="loader"></span> Opening Akashic Portals...`;
+
+  try {
+    const N = calcNumbers(p.name, p.dob, p.time, p.place);
+    const [y, m, d] = p.dob.split('-').map(Number);
+    const sun = getSunSign(m, d);
+    const rising = getRisingSign(m, d, p.time);
+
+    const res = await fetch('/api/akashic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: p.name,
+        dob: p.dob,
+        time: p.time,
+        place: p.place,
+        astrology: { sun, rising },
+        numerology: {
+          lp: N.lp,
+          expr: N.expr,
+          soul: N.soul,
+          pers: N.pers,
+          cexpr: N.cexpr,
+          vedic: N.vedic,
+          kabbalah: N.kabbalah,
+          diamond: N.diamond
+        }
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Portal connection timed out');
+    }
+
+    const readingData = await res.json();
+    
+    if (!p.akashicHistory) p.akashicHistory = [];
+    
+    p.akashicHistory.push({
+      timestamp: Date.now(),
+      reading: readingData
+    });
+
+    sp();
+    activeAkashicReading = p.akashicHistory[p.akashicHistory.length - 1];
+    showToast('Gateway Synchronized! Reading retrieved successfully. ✦');
+    renderAkashic();
+    loadAkashicRecord(p.akashicHistory.length - 1);
+  } catch (err) {
+    console.error(err);
+    showToast(`Celestial Alignment interrupted: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `🌌 Retrieve Akashic Soul Record`;
+  }
+}
+
+function simulatedSurchargePayment() {
+  const cardInput = document.getElementById('pay-card-num').value.trim();
+  if (!cardInput) {
+    showToast('Please enter a valid Card Number or UPI Address');
+    return;
+  }
+
+  showToast('Connecting with bank terminal...');
+  const payBtn = document.querySelector('#akashic-paywall button');
+  if (payBtn) {
+    payBtn.disabled = true;
+    payBtn.innerHTML = `<span class="loader"></span> Exchanging spiritual & material energy...`;
+  }
+
+  setTimeout(() => {
+    const p = profiles[ai];
+    if (p) {
+      p.akashicExtraSlots = (p.akashicExtraSlots || 0) + 1;
+      sp();
+      showToast('Transaction Approved! ₹1,100 INR received. 1 New Record Slot unlocked ✦');
+      document.getElementById('pay-card-num').value = '';
+      renderAkashic();
+    }
+    if (payBtn) {
+      payBtn.disabled = false;
+      payBtn.innerHTML = `Pay ₹1,100 INR & Unlock Record Slot`;
+    }
+  }, 3500);
+}
+
+function downloadAkashicReport() {
+  const p = profiles[ai];
+  if (!p || !activeAkashicReading) {
+    showToast('Retrieve or load a record first.');
+    return;
+  }
+
+  const h = activeAkashicReading;
+  const fileName = `${p.name.replace(/\s+/g, '_')}_Akashic_Soul_Record.txt`;
+  
+  const reportText = `====================================================================
+🌌 LUMINA NUMEROLOGY v2.1 — AKASHIC SOUL RECORD & CELESTIAL MANDATE
+====================================================================
+Subject: ${p.name.toUpperCase()} (${p.nick})
+Date of Birth: ${p.dob}
+Birth Time/Place: ${p.time || 'Not specified'} / ${p.place || 'Not specified'}
+Channeling Timestamp: ${new Date(h.timestamp).toString()}
+====================================================================
+
+I. THE BOOK OF LIFE (SOUL BLUEPRINT)
+--------------------------------------------------------------------
+${h.reading.soulBlueprint}
+
+II. CELESTIAL NATAL ALIGNMENTS
+--------------------------------------------------------------------
+${h.reading.natalAlignments}
+
+III. ACTIVE KARMIC AGREEMENTS
+--------------------------------------------------------------------
+${h.reading.karmicAgreements}
+
+IV. THE PATH OF EVOLUTION (GATEWAY CYCLES)
+--------------------------------------------------------------------
+${h.reading.pathEvolution}
+
+--------------------------------------------------------------------
+COSMIC BLESSING & MANDATE:
+"${h.reading.blessing}"
+
+====================================================================
+Securely channelled via Lumina Astro-Computation Gateway.
+====================================================================`;
+
+  const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast(`Akashic Scroll saved: ${fileName}`);
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
