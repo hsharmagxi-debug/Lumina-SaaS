@@ -2503,6 +2503,29 @@ try {
   auth.onAuthStateChanged((user) => {
     updateGDriveButton();
   });
+
+  // Picks up the result of a signInWithRedirect() call (e.g. GitHub) after the browser
+  // navigates back from the provider. Resolves with a null user on every normal page load
+  // that isn't returning from a redirect, so this is safe to run unconditionally.
+  auth.getRedirectResult().then((result) => {
+    if (!result || !result.user) return;
+    const user = result.user;
+    const providerId = (result.additionalUserInfo && result.additionalUserInfo.providerId) || '';
+    const providerName = providerId.includes('github') ? 'github' : providerId.split('.')[0] || 'github';
+    submitInlineAuth(
+      user.displayName || user.email || 'GitHub User',
+      user.email,
+      user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      providerName
+    );
+  }).catch((error) => {
+    console.error('Redirect sign-in error:', error);
+    if (error.code === 'auth/account-exists-with-different-credential') {
+      showToast('An account already exists with this email using a different sign-in method.');
+    } else {
+      showToast('Login failed: ' + error.message);
+    }
+  });
 } catch (e) {
   console.error("Firebase initialization failed:", e);
 }
@@ -2962,6 +2985,7 @@ function openAuthModal() {
 function closeAuthModal() {
   const gateway = document.getElementById('auth-gateway');
   if (gateway) gateway.style.display = 'none';
+  goBackToAuthInitial();
 }
 
 function scrollToSection(id) {
@@ -3211,25 +3235,119 @@ function triggerFederatedLogin(providerName) {
       }
       const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'google\')"]');
       if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .5 4.1 1.5l3.1-3.1C17.3 1.6 14.8 1 12 1 7.3 1 3.4 3.7 1.4 7.5l3.9 3C6.2 7 8.9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.4c-.3 1.5-1.1 2.7-2.4 3.6l3.7 2.8c2.1-2 3.4-4.9 3.4-8.6z"/><path fill="#FBBC05" d="M5.3 14.5c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.4 7C.5 8.8 0 10.8 0 12.9s.5 4.1 1.4 5.9l3.9-3z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-2.9l-3.7-2.8c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2-6.7-5l-3.9 3C3.4 20.3 7.3 23 12 23z"/></svg> Google Account';
+      goBackToAuthInitial();
     });
     return;
   }
-  
+
   if (providerName === 'github') {
-    brandColor = '#24292e';
-    content = `
-      <div style="text-align:center;margin-bottom:20px;width:100%">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="#fff" style="margin:0 auto 12px;display:block"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.167 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
-        <h3 style="font-size:1.15rem;font-weight:600;color:#fff;margin:0 0 4px;font-family:'Cinzel',serif">Authorize hsharmagxi-debug</h3>
-        <p style="font-size:.72rem;color:var(--txm);margin:0">Lumina Requests access to your GitHub public profile</p>
-      </div>
-      <div style="border:1px solid var(--bdr);border-radius:6px;padding:12px;background:rgba(255,255,255,0.02);margin-bottom:18px;text-align:left;font-size:0.7rem;width:100%;box-sizing:border-box">
-        <div style="color:var(--gold);margin-bottom:6px;font-weight:600">Permissions Requested:</div>
-        <div style="color:var(--txd)">✓ read:user (public profile data and email)</div>
-      </div>
-      <button type="button" class="btn btn-gold" onclick="submitInlineAuth('Dev Astrologer', 'dev@github.com', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80', 'github')" style="width:100%;justify-content:center;padding:10px;font-size:0.75rem;font-weight:600">Authorize GitHub Account</button>
-    `;
-  } else if (provider === 'discord') {
+    const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'github\')"]');
+    const originalBtnHtml = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<span class="loader" style="border-color:#000;border-bottom-color:transparent"></span> Connecting...';
+
+    (function(){
+      if (auth.currentUser) auth.signOut();
+      const p = new firebase.auth.GithubAuthProvider();
+      p.addScope('user:email');
+      return auth.signInWithPopup(p);
+    })().then((result) => {
+      const user = result.user;
+      submitInlineAuth(user.displayName || user.email || 'GitHub User', user.email, user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80', 'github');
+    }).catch((error) => {
+      console.error(error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        showToast('Sign-in cancelled.');
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        showToast('An account already exists with this email using a different sign-in method.');
+      } else {
+        showToast('Login failed: ' + error.message);
+      }
+      const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'github\')"]');
+      if (btn) btn.innerHTML = originalBtnHtml;
+      goBackToAuthInitial();
+    });
+    return;
+  } else if (providerName === 'twitter') {
+    const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'twitter\')"]');
+    const originalBtnHtml = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<span class="loader" style="border-color:#000;border-bottom-color:transparent"></span> Connecting...';
+
+    (function(){
+      if (auth.currentUser) auth.signOut();
+      const p = new firebase.auth.TwitterAuthProvider();
+      return auth.signInWithPopup(p);
+    })().then((result) => {
+      const user = result.user;
+      submitInlineAuth(user.displayName || user.email || 'X User', user.email, user.photoURL || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', 'twitter');
+    }).catch((error) => {
+      console.error(error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        showToast('Sign-in cancelled.');
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        showToast('An account already exists with this email using a different sign-in method.');
+      } else {
+        showToast('Login failed: ' + error.message);
+      }
+      const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'twitter\')"]');
+      if (btn) btn.innerHTML = originalBtnHtml;
+      goBackToAuthInitial();
+    });
+    return;
+  } else if (providerName === 'facebook') {
+    const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'facebook\')"]');
+    const originalBtnHtml = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<span class="loader" style="border-color:#000;border-bottom-color:transparent"></span> Connecting...';
+
+    (function(){
+      if (auth.currentUser) auth.signOut();
+      const p = new firebase.auth.FacebookAuthProvider();
+      p.addScope('email');
+      return auth.signInWithPopup(p);
+    })().then((result) => {
+      const user = result.user;
+      submitInlineAuth(user.displayName || user.email || 'Facebook User', user.email, user.photoURL || 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=150&q=80', 'facebook');
+    }).catch((error) => {
+      console.error(error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        showToast('Sign-in cancelled.');
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        showToast('An account already exists with this email using a different sign-in method.');
+      } else {
+        showToast('Login failed: ' + error.message);
+      }
+      const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'facebook\')"]');
+      if (btn) btn.innerHTML = originalBtnHtml;
+      goBackToAuthInitial();
+    });
+    return;
+  } else if (providerName === 'microsoft') {
+    const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'microsoft\')"]');
+    const originalBtnHtml = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<span class="loader" style="border-color:#000;border-bottom-color:transparent"></span> Connecting...';
+
+    (function(){
+      if (auth.currentUser) auth.signOut();
+      const p = new firebase.auth.OAuthProvider('microsoft.com');
+      p.setCustomParameters({ prompt: 'select_account' });
+      return auth.signInWithPopup(p);
+    })().then((result) => {
+      const user = result.user;
+      submitInlineAuth(user.displayName || user.email || 'Microsoft User', user.email, user.photoURL || 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=150&q=80', 'microsoft');
+    }).catch((error) => {
+      console.error(error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        showToast('Sign-in cancelled.');
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        showToast('An account already exists with this email using a different sign-in method.');
+      } else {
+        showToast('Login failed: ' + error.message);
+      }
+      const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'microsoft\')"]');
+      if (btn) btn.innerHTML = originalBtnHtml;
+      goBackToAuthInitial();
+    });
+    return;
+  } else if (providerName === 'discord') {
     brandColor = '#5865F2';
     content = `
       <div style="text-align:center;margin-bottom:20px;width:100%">
