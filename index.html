@@ -808,8 +808,8 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
           <div style="font-size:1.2rem;color:var(--purple)">⬡</div>
           <span style="background:rgba(197,160,89,0.2);color:var(--gold);padding:2px 8px;border-radius:10px;font-size:0.6rem;font-weight:700">🔒 Premium</span>
         </div>
-        <div style="font-family:'Cinzel',serif;font-size:0.95rem;color:#fff;margin-bottom:4px">5-Agent Expert Council</div>
-        <div style="font-size:0.72rem;color:var(--txd);line-height:1.5;margin-bottom:12px">Synthetic synthesis from Chaudhry, Jumaani, Chakraborty, Kapil & Nayar algorithms.</div>
+        <div style="font-family:'Cinzel',serif;font-size:0.95rem;color:#fff;margin-bottom:4px">5-Archetype Expert Council</div>
+        <div style="font-size:0.72rem;color:var(--txd);line-height:1.5;margin-bottom:12px">Synthesis across Chaldean, Vedic, Kabbalah, Bridge Number & Holistic lenses.</div>
         <button onclick="openAuthModal()" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">Consult Council 🔒</button>
       </div>
     </div>
@@ -1049,7 +1049,7 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
 
 <div class="tab-content" id="tab-tools">
   <div class="card"><div class="ct">🔢 Name / Word Checker <span class="badge new">Instant</span></div><div style="display:flex;gap:8px"><input type="text" id="tool-name" placeholder="Any name, word, or business name" style="flex:1"><button class="btn btn-gold btn-sm" onclick="checkName()">Check</button></div><div id="name-result"></div></div>
-  <div class="card"><div class="ct">📱 Mobile Number <span class="badge new">Dr. JC Chaudhry</span></div><div style="display:flex;gap:8px"><input type="text" id="tool-mobile" placeholder="Mobile number (digits only)" maxlength="15" style="flex:1"><button class="btn btn-teal btn-sm" onclick="checkMobile()">Check</button></div><div id="mobile-result"></div></div>
+  <div class="card"><div class="ct">📱 Mobile Number <span class="badge new">Chaldean Method</span></div><div style="display:flex;gap:8px"><input type="text" id="tool-mobile" placeholder="Mobile number (digits only)" maxlength="15" style="flex:1"><button class="btn btn-teal btn-sm" onclick="checkMobile()">Check</button></div><div id="mobile-result"></div></div>
   <div class="card"><div class="ct">🏠 Home / Address</div><div style="display:flex;gap:8px"><input type="text" id="tool-address" placeholder="House/flat number e.g. 42" style="flex:1"><button class="btn btn-outline btn-sm" onclick="checkAddress()">Check</button></div><div id="address-result"></div></div>
   <div class="card"><div class="ct">🚗 Vehicle Number</div><div style="display:flex;gap:8px"><input type="text" id="tool-vehicle" placeholder="e.g. DL01AB1234" style="flex:1"><button class="btn btn-outline btn-sm" onclick="checkVehicle()">Check</button></div><div id="vehicle-result"></div></div>
   <div class="card"><div class="ct">📅 Lucky Days Calendar <span class="badge new">This Month</span></div><div id="lucky-calendar"></div></div>
@@ -2095,38 +2095,38 @@ async function getAICounsel() {
     
     const masterAdviceHtml = isPaid ? `
         <div class="agent-card done" style="margin-bottom:10px">
-          <div class="aname" style="color:var(--gold)">✦ Dr. J C Chaudhry</div>
-          <div class="astyle">Chaldean System & Lo Shu Grid Expert</div>
-          <div class="aout" style="font-size:.76rem;line-height:1.65;color:var(--txd);margin-top:6px">${esc(data.masterAdvice.jcChaudhry)}</div>
+          <div class="aname" style="color:var(--gold)">✦ The Grid Warden</div>
+          <div class="astyle">Chaldean System & Lo Shu Grid Lens</div>
+          <div class="aout" style="font-size:.76rem;line-height:1.65;color:var(--txd);margin-top:6px">${esc(data.masterAdvice.gridWarden)}</div>
         </div>
-        
+
         <div class="agent-card done" style="margin-bottom:10px">
-          <div class="aname" style="color:var(--teal)">✦ Sanjay B Jumaani</div>
-          <div class="astyle">Name Alteration & Bridge Number Specialist</div>
-          <div class="aout" style="font-size:.76rem;line-height:1.65;color:var(--txd);margin-top:6px">${esc(data.masterAdvice.sanjayJumaani)}</div>
+          <div class="aname" style="color:var(--teal)">✦ The Bridge Analyst</div>
+          <div class="astyle">Name Alteration & Bridge Number Lens</div>
+          <div class="aout" style="font-size:.76rem;line-height:1.65;color:var(--txd);margin-top:6px">${esc(data.masterAdvice.bridgeAnalyst)}</div>
         </div>
-        
+
         <div class="agent-card done" style="margin-bottom:10px">
-          <div class="aname" style="color:var(--purple)">✦ Dr. Kartick Chakraborty</div>
-          <div class="astyle">Vedic Systems & Transit Cycles Expert</div>
-          <div class="aout" style="font-size:.76rem;line-height:1.65;color:var(--txd);margin-top:6px">${esc(data.masterAdvice.kartickChakraborty)}</div>
+          <div class="aname" style="color:var(--purple)">✦ The Vedic Seer</div>
+          <div class="astyle">Vedic Systems & Transit Cycles Lens</div>
+          <div class="aout" style="font-size:.76rem;line-height:1.65;color:var(--txd);margin-top:6px">${esc(data.masterAdvice.vedicSeer)}</div>
         </div>
-        
+
         <div class="agent-card done" style="margin-bottom:10px">
-          <div class="aname" style="color:var(--gl)">✦ Anupam V Kapil</div>
-          <div class="astyle">Author, Kabbalah & Esoteric Specialist</div>
-          <div class="aout" style="font-size:.76rem;line-height:1.65;color:var(--txd);margin-top:6px">${esc(data.masterAdvice.anupamKapil)}</div>
+          <div class="aname" style="color:var(--gl)">✦ The Kabbalist</div>
+          <div class="astyle">Kabbalah & Esoteric Lens</div>
+          <div class="aout" style="font-size:.76rem;line-height:1.65;color:var(--txd);margin-top:6px">${esc(data.masterAdvice.kabbalist)}</div>
         </div>
-        
+
         <div class="agent-card done" style="margin-bottom:16px">
-          <div class="aname" style="color:var(--green)">✦ Rajat Nayar</div>
-          <div class="astyle">Holistic Numerologist & Cross-System Synthesis</div>
-          <div class="aout" style="font-size:.76rem;line-height:1.65;color:var(--txd);margin-top:6px">${esc(data.masterAdvice.rajatNayar)}</div>
+          <div class="aname" style="color:var(--green)">✦ The Synthesist</div>
+          <div class="astyle">Holistic Cross-System Synthesis Lens</div>
+          <div class="aout" style="font-size:.76rem;line-height:1.65;color:var(--txd);margin-top:6px">${esc(data.masterAdvice.synthesist)}</div>
         </div>
     ` : `
         <div style="background:rgba(8,16,40,.6); border:1px dashed var(--purple); border-radius:12px; padding:20px; text-align:center; margin-bottom:16px">
           <div style="font-size:1.1rem; color:var(--purple); margin-bottom:6px">🔒 Master Council Readings Locked</div>
-          <p style="font-size:.72rem; color:var(--txd); margin-bottom:12px">Detailed crisis counseling from all 5 world numerologists is reserved for Premium tier. Unlock now to align your spelling and cycles.</p>
+          <p style="font-size:.72rem; color:var(--txd); margin-bottom:12px">Detailed crisis counseling from all 5 Council archetypes is reserved for Premium tier. Unlock now to align your spelling and cycles.</p>
           <button class="btn btn-gold btn-sm" onclick="switchTab('profiles')">💎 Subscribe Now</button>
         </div>
     `;
@@ -2304,9 +2304,14 @@ function nameCorrection(){
 
 const AGENTS=[
   // Agent 1: CHALDEAN specialist — focuses on Chaldean vs Pythagorean gap
+  // Original archetype (2026-09-09): was previously written as a real, named, currently
+  // practicing professional numerologist (with their actual bio) with no consent -- see
+  // handoff.md / memory.md for the full writeup. Renamed to a fictional lens defined purely by
+  // the numerological method, consistent across this array, the /api/consult prompt in
+  // server.ts, and every place that renders these results.
   {
-    name:'Dr. J C Chaudhry',
-    style:'Guinness World Record · Chaldean System · Lo Shu Expert · 40 Years',
+    name:'The Grid Warden',
+    style:'Chaldean System · Lo Shu Grid Archetype · Ancient Discipline Lens',
     system:'Chaldean',
     fn:(N,p)=>{
       const gap=Math.abs(N.cexpr-N.expr);
@@ -2314,10 +2319,10 @@ const AGENTS=[
       return `Chaldean reading for ${p.nick}: Your karmic Destiny is ${N.cexpr} (Chaldean) against your earthly Expression ${N.expr} (Pythagorean). ${aligned?'Rare cross-system alignment — both ancient and modern agree on your soul contract.':'A gap of '+gap+' between systems signals identity friction. Your karmic self and earthly presentation are in tension — name alignment toward LP '+N.lp+' is advisable.'} Chaldean Soul ${N.csoul} reveals your inner karmic fire; Personality ${N.cpers} your outer ancient mask. Lo Shu: ${N.lsm.length===0?'Complete grid — every archetype present. Extraordinarily rare.':N.lsm.length+' missing numbers: '+N.lsm.join(', ')+'. These missing grids are your karmic growth assignments.'} Psychic Number ${N.psychic} (${VED_PLANETS[N.psychic]}) governs your daily instinct.`;
     }
   },
-  // Agent 2: NAME CORRECTION specialist — Jumaani system
+  // Agent 2: NAME CORRECTION specialist
   {
-    name:'Sanjay B Jumaani',
-    style:'Bollywood Astro-Numerologist · Name Alteration · Celebrity Advisor',
+    name:'The Bridge Analyst',
+    style:'Name Vibration · Bridge Number Archetype · Alignment Lens',
     system:'Name Correction',
     fn:(N,p)=>{
       const bridge=N.lpExprBridge;
@@ -2327,8 +2332,8 @@ const AGENTS=[
   },
   // Agent 3: VEDIC + CYCLES specialist
   {
-    name:'Dr. Kartick Chakraborty',
-    style:'Global Celebrity Numerologist · USA · UK · Dubai · Vedic Systems',
+    name:'The Vedic Seer',
+    style:'Vedic Systems · Planetary Cycles Archetype · Jyotish Lens',
     system:'Vedic + Cycles',
     fn:(N,p)=>{
       const curPin=N.pins[N.cp-1];
@@ -2338,8 +2343,8 @@ const AGENTS=[
   },
   // Agent 4: KABBALAH + ESOTERIC specialist
   {
-    name:'Anupam V Kapil',
-    style:'Celebrity Astro-Numerologist · Author · Kabbalah & Esoteric Systems',
+    name:'The Kabbalist',
+    style:'Kabbalah & Esoteric Archetype · Tree of Life Lens',
     system:'Kabbalah + Esoteric',
     fn:(N,p)=>{
       const kabPath=KAB_PATH[N.kabbalah]||'Path '+N.kabbalah;
@@ -2348,8 +2353,8 @@ const AGENTS=[
   },
   // Agent 5: HOLISTIC synthesis — Lo Shu + all systems
   {
-    name:'Rajat Nayar',
-    style:'Holistic Numerologist · Ancient Wisdom · Cross-System Synthesis',
+    name:'The Synthesist',
+    style:'Holistic Cross-System Archetype · Ancient Wisdom Lens',
     system:'Holistic Synthesis',
     fn:(N,p)=>{
       const allNums=[N.lp,N.expr,N.soul,N.pers,N.psychic,N.kabbalah,N.vedic?.moolank,N.vedic?.bhagyank].filter(Boolean);
@@ -2997,19 +3002,19 @@ ${chalsMd}
 
 ---
 
-## ⟳ Section 9: THE 5-AGENT CONSENSUS COUNCILS
+## ⟳ Section 9: THE 5-ARCHETYPE CONSENSUS COUNCIL
 
-The five world-class numerologists analyze your chart from five specialized system perspectives:
+Five original archetypal lenses analyze your chart from five specialized system perspectives:
 
-1. **Dr. J C Chaudhry (Chaldean Specialist):**
+1. **The Grid Warden (Chaldean Lens):**
    * *Analysis:* ${AGENTS[0].fn(N, p)}
-2. **Sanjay B Jumaani (Name Correction Expert):**
+2. **The Bridge Analyst (Name Correction Lens):**
    * *Analysis:* ${AGENTS[1].fn(N, p)}
-3. **Dr. Kartick Chakraborty (Vedic & Transits):**
+3. **The Vedic Seer (Vedic & Transits Lens):**
    * *Analysis:* ${AGENTS[2].fn(N, p)}
-4. **Anupam V Kapil (Esoteric & Kabbalah):**
+4. **The Kabbalist (Esoteric & Kabbalah Lens):**
    * *Analysis:* ${AGENTS[3].fn(N, p)}
-5. **Rajat Nayar (Holistic Synthesis):**
+5. **The Synthesist (Holistic Synthesis Lens):**
    * *Analysis:* ${AGENTS[4].fn(N, p)}
 
 ---

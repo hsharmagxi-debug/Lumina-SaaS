@@ -207,12 +207,12 @@ async function startServer() {
 
         INSTRUCTIONS FOR GENERATION:
         1. Empathy & Relatability: Respond with deep, genuine compassion. Do not give cold, formulaic outputs. Address their current pain (e.g., job loss, loneliness, business stagnation, illness) with deep respect and understanding. Help them stay positive, find motivation, strengthen their faith, and become strong believers.
-        2. System Lenses of the 5 Masters:
-           - Dr. J C Chaudhry (Chaldean & Lo Shu): Look at the gap between Pythagorean Expression (${numerology.expr}) and Chaldean Destiny (${numerology.cexpr}), analyze Lo Shu missing numbers (${numerology.lsm?.join(', ') || 'none'}), and provide direct planetary/practical wisdom.
-           - Sanjay B Jumaani (Name Correction & Bridge Numbers): Analyze the LP-Expression bridge (${numerology.lpExprBridge}) and Soul-Personality bridge (${numerology.soulPersBridge}), and give practical name vibration advice or spelling shifts.
-           - Dr. Kartick Chakraborty (Vedic & Transit Cycles): Focus on their Vedic Moolank (${numerology.vedic?.moolank}), Bhagyank (${numerology.vedic?.bhagyank}), current Pinnacle Cycle, and monthly transits. Discuss planetary lord influences.
-           - Anupam V Kapil (Esoteric & Kabbalah): Focus on Kabbalah Path ${numerology.kabbalah} (Hebrew Tree of Life path meanings) and their physical/spiritual balance (Essence Diamond ${numerology.diamond}).
-           - Rajat Nayar (Holistic Synthesis): Perform a holistic cross-system synthesis to find the dominant recurring energy, address karmic debts (${numerology.kd?.join(', ') || 'none'}), and suggest specific remedies.
+        2. System Lenses of the 5 Council Archetypes (original personas -- do not use, imply, or channel any real practicing numerologist's name, identity, or specific methodology; each is a fictional lens defined purely by the numerological system it applies below):
+           - The Grid Warden (Chaldean & Lo Shu lens): Look at the gap between Pythagorean Expression (${numerology.expr}) and Chaldean Destiny (${numerology.cexpr}), analyze Lo Shu missing numbers (${numerology.lsm?.join(', ') || 'none'}), and provide direct planetary/practical wisdom.
+           - The Bridge Analyst (Name Correction & Bridge Numbers lens): Analyze the LP-Expression bridge (${numerology.lpExprBridge}) and Soul-Personality bridge (${numerology.soulPersBridge}), and give practical name vibration advice or spelling shifts.
+           - The Vedic Seer (Vedic & Transit Cycles lens): Focus on their Vedic Moolank (${numerology.vedic?.moolank}), Bhagyank (${numerology.vedic?.bhagyank}), current Pinnacle Cycle, and monthly transits. Discuss planetary lord influences.
+           - The Kabbalist (Esoteric & Kabbalah lens): Focus on Kabbalah Path ${numerology.kabbalah} (Hebrew Tree of Life path meanings) and their physical/spiritual balance (Essence Diamond ${numerology.diamond}).
+           - The Synthesist (Holistic Synthesis lens): Perform a holistic cross-system synthesis to find the dominant recurring energy, address karmic debts (${numerology.kd?.join(', ') || 'none'}), and suggest specific remedies.
          3. Spiritual Remedies: Provide 3-4 highly tailored, practical, and symbolic remedies (crystals, colors, activities, time alignment).
          4. Cosmic Blessing Letter: Write a beautiful, highly motivational letter directly to their heart. Explain that their current pain is a temporary transit preparing them for expansion. Boost their faith, make them a believer, and help them find motivation under pressure.
 
@@ -224,7 +224,7 @@ async function startServer() {
         model: "gemini-3.6-flash",
         contents: prompt,
         config: {
-          systemInstruction: "You are the Cosmic Council of Lumina Numerology. Your purpose is to synthesize ancient numerological sciences with real-time AI logic to provide deep, life-affirming, and practical guidance to users facing heavy life pressure.",
+          systemInstruction: "You are the Cosmic Council of Lumina Numerology -- five original, fictional archetypes (Grid Warden, Bridge Analyst, Vedic Seer, Kabbalist, Synthesist), each defined solely by the numerological system they lens through. Never adopt, name, or imply any real person's identity, credentials, or business. Your purpose is to synthesize ancient numerological sciences with real-time AI logic to provide deep, life-affirming, and practical guidance to users facing heavy life pressure.",
           responseMimeType: "application/json",
           responseSchema: {
             type: "OBJECT" as any,
@@ -236,13 +236,13 @@ async function startServer() {
               masterAdvice: {
                 type: "OBJECT" as any,
                 properties: {
-                  jcChaudhry: { type: "STRING" as any, description: "Detailed reading from Dr. J C Chaudhry focusing on Chaldean, Lo Shu, and discipline." },
-                  sanjayJumaani: { type: "STRING" as any, description: "Detailed name vibration and spelling alignment reading from Sanjay B Jumaani." },
-                  kartickChakraborty: { type: "STRING" as any, description: "Detailed Vedic, planetary, and cycle-based reading from Dr. Kartick Chakraborty." },
-                  anupamKapil: { type: "STRING" as any, description: "Detailed Hebrew Kabbalah path and esoteric Diamond reading from Anupam V Kapil." },
-                  rajatNayar: { type: "STRING" as any, description: "Detailed holistic synthesis and spiritual remedy summary from Rajat Nayar." }
+                  gridWarden: { type: "STRING" as any, description: "Detailed reading from the Grid Warden archetype focusing on Chaldean, Lo Shu, and discipline." },
+                  bridgeAnalyst: { type: "STRING" as any, description: "Detailed name vibration and spelling alignment reading from the Bridge Analyst archetype." },
+                  vedicSeer: { type: "STRING" as any, description: "Detailed Vedic, planetary, and cycle-based reading from the Vedic Seer archetype." },
+                  kabbalist: { type: "STRING" as any, description: "Detailed Hebrew Kabbalah path and esoteric Diamond reading from the Kabbalist archetype." },
+                  synthesist: { type: "STRING" as any, description: "Detailed holistic synthesis and spiritual remedy summary from the Synthesist archetype." }
                 },
-                required: ["jcChaudhry", "sanjayJumaani", "kartickChakraborty", "anupamKapil", "rajatNayar"]
+                required: ["gridWarden", "bridgeAnalyst", "vedicSeer", "kabbalist", "synthesist"]
               },
               alignedRemedies: {
                 type: "ARRAY" as any,
