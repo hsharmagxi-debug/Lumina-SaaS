@@ -5,6 +5,30 @@ Read `memory.md` in this same folder first for the full detailed log — this fi
 (`C:\Users\Dell\.claude\skills\lumina-saas\SKILL.md`) for a same-session-equivalent digest
 loadable from any working directory.
 
+## 📋 Premium pricing & Razorpay plan — drafted, awaiting sign-off
+
+Full plan published as an artifact: **"Lumina Premium Blueprint"**
+(https://claude.ai/code/artifact/d53e2240-2e54-46b6-a4cd-e689a0140434) — pricing (₹299/mo,
+₹2,499/yr, ₹49 AI-credit top-ups), the 5 premium categories mapped to real existing tabs, honest
+competitive positioning (checked: multi-system AI synthesis is NOT unique to Lumina — jenova.ai
+already does it; the defensible claim is the specific 5-system + forecast + correction-tools
+bundle, not an unverifiable "world first"), and the full engineering build order (Firebase
+ID-token middleware → Razorpay Subscriptions/Orders → webhook → `entitlements/{uid}` Firestore
+collection → real gates on every premium check and both AI routes). Read it before starting any
+of the Razorpay work — it's the source of truth for phase order, not this file.
+
+**One new finding from that research, separate from payments, also needs a decision:**
+`server.ts`'s `/api/consult` prompt (the "Master Consensus Engine") generates AI readings
+explicitly in the voice of 5 named real people — Dr. J C Chaudhry, Sanjay B. Jumaani, Dr.
+Kartick Chakraborty, Anupam V. Kapil, Rajat Nayar. Checked: at least the first two are real,
+currently active, prominent professional numerologists in India with their own paid
+consultancies (jcchaudhry.com / Chaudhry Nummero Pvt. Ltd.), with nothing in this codebase
+suggesting their knowledge or consent. This is a real legal/reputational exposure (false
+endorsement) independent of the payment work, and should be resolved — likely by renaming the
+5 lenses to original archetypes describing the *method* rather than the person — before this
+feature (Category E in the plan) goes anywhere near a paywall. See the plan's §0 for the full
+writeup and the two honest paths forward.
+
 ## ⚠️ CRITICAL, STILL OPEN: no real payment gateway — premium is a stopgap, not a fix
 
 User-reported (2026-09-08): anyone could grant themselves Premium with a single click, for
