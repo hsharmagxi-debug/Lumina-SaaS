@@ -118,7 +118,12 @@ function getDb() {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  // Railway (and most real hosts) inject PORT and expect the app to listen on it -- the
+  // hardcoded 3000 worked locally but caused a real 502 in production (confirmed: deploy logs
+  // showed "Server running on http://localhost:3000" and Starting Container, so the process was
+  // alive and listening, just not on the port Railway's proxy was routing to). Falls back to
+  // 3000 for local dev where PORT is never set.
+  const PORT = Number(process.env.PORT) || 3000;
 
   // `verify` captures the exact raw bytes onto req.rawBody -- Razorpay's webhook signature is
   // computed over the literal request body, and re-serializing the parsed JSON before checking
