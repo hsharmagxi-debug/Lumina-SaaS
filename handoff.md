@@ -5,56 +5,42 @@ Read `memory.md` in this same folder first for the full detailed log — this fi
 (`C:\Users\Dell\.claude\skills\lumina-saas\SKILL.md`) for a same-session-equivalent digest
 loadable from any working directory.
 
-## 📋 Premium pricing & Razorpay plan — drafted, awaiting sign-off
+## ✅ CURRENT STATE (2026-09-08, end of session) — read this first, the sections below are historical
 
-Full plan published as an artifact: **"Lumina Premium Blueprint"**
-(https://claude.ai/code/artifact/d53e2240-2e54-46b6-a4cd-e689a0140434) — pricing (₹299/mo,
-₹2,499/yr, ₹49 AI-credit top-ups), the 5 premium categories mapped to real existing tabs, honest
-competitive positioning (checked: multi-system AI synthesis is NOT unique to Lumina — jenova.ai
-already does it; the defensible claim is the specific 5-system + forecast + correction-tools
-bundle, not an unverifiable "world first"), and the full engineering build order (Firebase
-ID-token middleware → Razorpay Subscriptions/Orders → webhook → `entitlements/{uid}` Firestore
-collection → real gates on every premium check and both AI routes). Read it before starting any
-of the Razorpay work — it's the source of truth for phase order, not this file.
+**The app is live**: https://lumina-web-production-b8df.up.railway.app (Railway project
+`Lumina-SaaS`, service `lumina-web`). Real Razorpay billing (3 packages: Premium Monthly ₹299,
+Premium Yearly ₹2,499, Insight Credits ₹49/₹199-for-5), Firebase ID-token auth on `/api/profiles`
+and the AI routes, and a real Gemini API key are all wired in and deployed. Full story —
+including 3 real bugs found and fixed by actually curling the live site (bun.lock, hardcoded
+PORT, missing trust-proxy) — is in memory.md section 12.
 
-**One new finding from that research, separate from payments, also needs a decision:**
-`server.ts`'s `/api/consult` prompt (the "Master Consensus Engine") generates AI readings
-explicitly in the voice of 5 named real people — Dr. J C Chaudhry, Sanjay B. Jumaani, Dr.
-Kartick Chakraborty, Anupam V. Kapil, Rajat Nayar. Checked: at least the first two are real,
-currently active, prominent professional numerologists in India with their own paid
-consultancies (jcchaudhry.com / Chaudhry Nummero Pvt. Ltd.), with nothing in this codebase
-suggesting their knowledge or consent. This is a real legal/reputational exposure (false
-endorsement) independent of the payment work, and should be resolved — likely by renaming the
-5 lenses to original archetypes describing the *method* rather than the person — before this
-feature (Category E in the plan) goes anywhere near a paywall. See the plan's §0 for the full
-writeup and the two honest paths forward.
+**Still open, in priority order:**
+1. **Real Razorpay keys.** The only available account's live key is approved for thekpihub.com
+   only (different business model) — user is creating a separate Razorpay account for Lumina.
+   Once you have `Key ID`/`Key Secret`/webhook secret: set them as `RAZORPAY_KEY_ID`,
+   `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` (Railway variables + local `.env`), and
+   register the webhook URL `https://lumina-web-production-b8df.up.railway.app/api/billing/webhook`
+   in the Razorpay dashboard (Settings → Webhooks) with events: `subscription.activated`,
+   `subscription.charged`, `subscription.cancelled`, `subscription.completed`,
+   `subscription.expired`, `payment.captured`.
+2. **Discord/LinkedIn OAuth redirect URIs for the new domain** — needs
+   `https://lumina-web-production-b8df.up.railway.app/auth/discord/callback` and
+   `.../auth/linkedin/callback` added as *additional* authorized redirect URIs (keep
+   `localhost:3000` too) in each provider's dev console. Check whether this session already did
+   it (search this file's own later updates, or just check the dashboards directly) before
+   redoing it.
+3. **The Category E (Master Consensus Engine) real-numerologist-naming issue is still
+   unresolved** — held back from the paid packages (free/unlisted, per an earlier decision), but
+   that's a mitigation, not a fix. See memory.md section 11 for the full writeup. Recommended:
+   rename the 5 AI "lenses" (Dr. J C Chaudhry, Sanjay B. Jumaani, etc.) to original archetypes
+   describing the method, not the person — a same-day text change in `server.ts`'s
+   `/api/consult` prompt.
+4. Instagram (Tier 2 OAuth) — still unwired, unrelated to the billing work.
 
-## ⚠️ CRITICAL, STILL OPEN: no real payment gateway — premium is a stopgap, not a fix
+Full pricing/positioning rationale: the **"Lumina Premium Blueprint"** artifact
+(https://claude.ai/code/artifact/d53e2240-2e54-46b6-a4cd-e689a0140434).
 
-User-reported (2026-09-08): anyone could grant themselves Premium with a single click, for
-free. Confirmed and it was worse than reported — see memory.md's "CRITICAL: fake premium tier /
-no payment gateway" section for the full writeup. **What's done today is a stopgap that closes
-the self-service hole, not the real fix**:
-- Client-side self-upgrade disabled (`togglePlan()` in `index.html` now only allows paid→free,
-  never free→paid); new-profile plan dropdowns default to Free with Premium marked
-  "Coming Soon"; existing self-granted "paid" profiles reset to free via a schema migration
-  (`SCHEMA_VERSION` bumped to 6); the fake `simulatedSurchargePayment()` no longer grants
-  anything.
-- Server-side defense in depth: `POST /api/profiles` in `server.ts` now forces `plan: "free"`
-  on every profile regardless of what the client sends.
-- **Still genuinely broken, not touched**: `/api/profiles` has **no authentication at all** —
-  it trusts whatever `email` the caller claims, so anyone can read or overwrite anyone else's
-  saved profiles by knowing/guessing their email. This needs real Firebase ID-token
-  verification middleware before this app has any real users.
-- **The actual ask (real Razorpay-backed subscriptions) is not built yet.** User chose Razorpay
-  as the gateway. This needs: a Razorpay account/API keys for this project, a checkout flow
-  (Monthly $11 / Yearly $111 as currently advertised in the UI, plus the ₹1,100 one-off Akashic
-  slot purchase), a webhook endpoint verifying payment signatures server-side, and entitlement
-  storage tied to the authenticated Firebase UID (not email, not client-supplied) that every
-  premium-gated feature checks. This is a substantial follow-up project of its own — plan it
-  properly (likely its own EnterPlanMode session) rather than bolting it on quickly.
-
-## Current state (2026-09-08)
+## Current state (2026-09-08) — historical, from earlier in this session, before the above
 
 **Tier 1 (Firebase-native providers) — fully done, all 5 user-confirmed working**: Google,
 GitHub, X/Twitter, Facebook, Microsoft.

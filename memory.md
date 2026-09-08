@@ -440,6 +440,100 @@ CRITICAL banner):
   customer, can become Premium until the real integration exists. That trade-off was explicit
   and user-approved, not an oversight.
 
+## 12. Real Razorpay billing built + first live deployment (2026-09-08, later same session)
+
+User explicitly asked to bind Razorpay to "3 recommended packages" in the live app and complete
+the architecture "in proper sequence." Built `billing.ts` (Razorpay Subscriptions for Premium
+Monthly ₹299/Yearly ₹2,499, Orders API for Insight Credits ₹49/₹199-for-5), Firebase ID-token
+`verifyAuth` middleware, migrated `/api/profiles` off the client-email model onto it, and wired
+real Razorpay Checkout.js into `index.html`'s Premium tab. Full detail and every gotcha
+(client-vs-Admin Firestore SDK, wrong Firestore database) is in section 11's neighboring commits
+— this section covers what happened getting it **live**, which is its own story.
+
+### Razorpay account: existing account not usable, new one required
+
+The only available Razorpay account's live key (`rzp_live_...`) is approved for `thekpihub.com`
+only — Razorpay's own UI states additional websites on one account must share the same business
+model as the first, and numerology subscriptions vs. B2B SaaS analytics don't. **User chose to
+create a separate, new Razorpay account for Lumina** rather than misdeclare the business model.
+That signup (KYC included) is the user's own action — still pending as of this write-up. Real
+`RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`/`RAZORPAY_WEBHOOK_SECRET` are not wired in anywhere yet;
+`billing.ts`'s routes report "not configured" gracefully until they are (same pattern as the
+Tier 2 OAuth providers before their real credentials existed).
+
+### First real deployment: Railway, project "Lumina-SaaS"
+
+No hosting existed for this app before this session — `npm run dev` on localhost was the whole
+story. Created a fresh Railway project (id `f1cea083-aaf5-4ee9-90c5-47f7f64d8995`, workspace
+"Himanshu Sharma's Projects" — deliberately NOT reusing `jubilant-growth`/`trade-cio-ashu`/
+`captivating-achievement`, all unrelated). Service `lumina-web` (id
+`e64e7e60-5596-48af-ba2d-b83b5a51890c`), deployed from `hsharmagxi-debug/Lumina-SaaS` main
+branch. Live domain: **https://lumina-web-production-b8df.up.railway.app**.
+
+**Gotcha: Railway's GitHub App wasn't installed on `hsharmagxi-debug` at all** (only on the
+`thekpihub` org and one other personal repo) — `connect-service-source` failed with "User does
+not have access to the repo." Diagnosed by checking github.com/settings/installations directly
+rather than guessing. Fixed by navigating straight to
+`https://github.com/apps/railway-app/installations/new` (same-tab, avoids the popup-window
+problem Railway's own in-dashboard "Configure GitHub App" link hits) and installing it scoped to
+just this one repo (not "All repositories" — least privilege). Needed the user for the GitHub
+sudo-mode 2FA step, same category as every other popup/2FA moment this project has hit.
+
+**Three real bugs found and fixed by actually curling the live site, not by trusting a green
+deploy** — each would have shipped silently broken otherwise:
+
+1. **Build failure: `bun install --frozen-lockfile` exit 1.** Railway's Railpack builder
+   auto-detects a package manager from whichever lockfile it finds; it found `bun.lock` (a
+   leftover — `git log` confirms it was added exactly once, in the original AI-Studio scaffold
+   commit, and never touched again — this project has only ever actually used `npm run dev`/
+   `npm install`) and used bun instead of npm, then correctly refused to proceed because
+   `bun.lock` didn't reflect the new `razorpay` dependency (only `package-lock.json` did, via
+   npm). Fixed by deleting `bun.lock` entirely.
+2. **502 on every route despite deployment status SUCCESS.** Deploy logs showed the app
+   actually starting fine ("Server running on http://localhost:3000", "Starting Container") —
+   not a crash. Root cause: `server.ts` hardcoded `const PORT = 3000` and never read
+   `process.env.PORT`, which Railway injects and expects the app to listen on. Fixed with
+   `Number(process.env.PORT) || 3000` (falls back to 3000 for local dev, where PORT is never
+   set — confirmed unaffected by hand).
+3. **OAuth redirect_uri came back `http://` instead of `https://`.** Found by curling
+   `/auth/discord/start` on the live domain and reading the actual `Location` header before
+   registering anything with Discord/LinkedIn — would have caused a redirect_uri mismatch the
+   moment an `https://` URI got registered on their side. Root cause: Railway terminates TLS at
+   its edge and forwards plain HTTP to the container; Express's `req.protocol` (which
+   `oauth-providers.ts` builds `redirect_uri` from) only reports `https` if told to trust the
+   `X-Forwarded-Proto` header. Fixed with `app.set("trust proxy", true)`.
+
+Each of these three was a separate commit, in the order found — see git log
+(`b088191`, `f87b573`, `cc93689`). **Lesson worth repeating: "deployment succeeded" is not the
+same claim as "the app works" — the only way to know is to actually curl the live URL and read
+real response codes/headers, which is what caught all three.**
+
+### Gemini API key found and wired in (separate from the payment work)
+
+User located a pre-existing `lumina-numerology` Gemini API key in Google AI Studio
+(`gen-lang-client-0531769124` — matches the Firebase project exactly; confirmed via project
+number `437784650725` matching `firebase-applet-config.json`'s `messagingSenderId`), created
+Jun 20 2026, billed to the user's own "My Billing Account" (Tier 1 Prepay). Read the full key
+via the accessibility tree of AI Studio's "API key details" dialog (not a screenshot) after
+`navigator.clipboard.readText()` hung the tab waiting on a permission prompt — same
+screenshot-vs-accessibility-tree lesson as every credential read this project has done. Saved to
+`Credentials\.env`, the repo-local `.env`, and as a Railway variable. This closes the
+previously-flagged "no GEMINI_API_KEY anywhere" gap — the AI Consult/Akashic routes (still
+free/unlisted per the Category E naming flag, not payment-gated) should now actually work in
+both local dev and production.
+
+### Still open after this session
+
+- Real Razorpay keys (new, Lumina-specific account) — pending the user's own signup/KYC.
+- Discord's and LinkedIn's redirect URIs need the new Railway domain added (as an *additional*
+  URI, keeping `localhost:3000` for continued local dev) — in progress as this section is
+  written; check `handoff.md` for the confirmed outcome.
+- The Category E (Master Consensus Engine) real-numerologist-naming issue is **unchanged and
+  still unresolved** — now live-deployed alongside everything else, which doesn't make it more
+  urgent than before but is worth restating: it was never blocking this deployment, only
+  blocking that one feature's inclusion in the paid packages.
+- Instagram (Tier 2) still not wired — unrelated to this session's work.
+
 ## 10. Where every credential lives
 
 All in `C:\Projects\Credentials\.env`, under a `# LUMINA-SAAS — ...` comment block per provider,
