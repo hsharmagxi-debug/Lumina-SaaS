@@ -118,6 +118,14 @@ function getDb() {
 
 async function startServer() {
   const app = express();
+
+  // Railway (like most real hosts) terminates TLS at its edge and forwards plain HTTP to the
+  // container, setting X-Forwarded-Proto: https. Without this, req.protocol always reports
+  // "http" -- confirmed live: the Discord OAuth redirect_uri came back as http://... on the
+  // deployed app, which would mismatch whatever https:// URI gets registered in Discord's/
+  // LinkedIn's dev consoles and break the whole Tier 2 login flow. oauth-providers.ts derives
+  // its redirect_uri from req.protocol, so this has to be right before those URIs are registered.
+  app.set("trust proxy", true);
   // Railway (and most real hosts) inject PORT and expect the app to listen on it -- the
   // hardcoded 3000 worked locally but caused a real 502 in production (confirmed: deploy logs
   // showed "Server running on http://localhost:3000" and Starting Container, so the process was
