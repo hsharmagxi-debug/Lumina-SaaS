@@ -5,6 +5,31 @@ Read `memory.md` in this same folder first for the full detailed log — this fi
 (`C:\Users\Dell\.claude\skills\lumina-saas\SKILL.md`) for a same-session-equivalent digest
 loadable from any working directory.
 
+## ⚠️ CRITICAL, STILL OPEN: no real payment gateway — premium is a stopgap, not a fix
+
+User-reported (2026-09-08): anyone could grant themselves Premium with a single click, for
+free. Confirmed and it was worse than reported — see memory.md's "CRITICAL: fake premium tier /
+no payment gateway" section for the full writeup. **What's done today is a stopgap that closes
+the self-service hole, not the real fix**:
+- Client-side self-upgrade disabled (`togglePlan()` in `index.html` now only allows paid→free,
+  never free→paid); new-profile plan dropdowns default to Free with Premium marked
+  "Coming Soon"; existing self-granted "paid" profiles reset to free via a schema migration
+  (`SCHEMA_VERSION` bumped to 6); the fake `simulatedSurchargePayment()` no longer grants
+  anything.
+- Server-side defense in depth: `POST /api/profiles` in `server.ts` now forces `plan: "free"`
+  on every profile regardless of what the client sends.
+- **Still genuinely broken, not touched**: `/api/profiles` has **no authentication at all** —
+  it trusts whatever `email` the caller claims, so anyone can read or overwrite anyone else's
+  saved profiles by knowing/guessing their email. This needs real Firebase ID-token
+  verification middleware before this app has any real users.
+- **The actual ask (real Razorpay-backed subscriptions) is not built yet.** User chose Razorpay
+  as the gateway. This needs: a Razorpay account/API keys for this project, a checkout flow
+  (Monthly $11 / Yearly $111 as currently advertised in the UI, plus the ₹1,100 one-off Akashic
+  slot purchase), a webhook endpoint verifying payment signatures server-side, and entitlement
+  storage tied to the authenticated Firebase UID (not email, not client-supplied) that every
+  premium-gated feature checks. This is a substantial follow-up project of its own — plan it
+  properly (likely its own EnterPlanMode session) rather than bolting it on quickly.
+
 ## Current state (2026-09-08)
 
 **Tier 1 (Firebase-native providers) — fully done, all 5 user-confirmed working**: Google,

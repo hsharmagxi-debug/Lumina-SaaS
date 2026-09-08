@@ -693,8 +693,8 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
       <div class="fg"><label>Nickname</label><input type="text" id="inp-nick" placeholder="e.g. Ashu" maxlength="30"></div>
       <div class="fg"><label>Subscription Plan Tier</label>
         <select id="inp-plan" style="width:100%;padding:10px;background:rgba(197,160,89,.04);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);font-family:'Raleway',sans-serif;font-size:.85rem">
-          <option value="free">Free Tier (Gated Access)</option>
-          <option value="paid" selected>Premium Tier (All Unlocked)</option>
+          <option value="free" selected>Free Tier (Gated Access)</option>
+          <option value="paid" disabled>Premium Tier (Coming Soon — subscribe from the Premium tab)</option>
         </select>
       </div>
 
@@ -1256,8 +1256,8 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
     <div class="fg"><label>Nickname</label><input type="text" id="new-nick" placeholder="Display name"></div>
     <div class="fg"><label>Subscription Plan Tier</label>
       <select id="new-plan" style="width:100%;padding:10px;background:rgba(197,160,89,.04);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);font-family:'Raleway',sans-serif;font-size:.85rem">
-        <option value="free">Free Tier (Gated Access)</option>
-        <option value="paid">Premium Tier (All Unlocked)</option>
+        <option value="free" selected>Free Tier (Gated Access)</option>
+        <option value="paid" disabled>Premium Tier (Coming Soon — subscribe from the Premium tab)</option>
       </select>
     </div>
     <button class="btn btn-gold btn-sm" onclick="addProfile()">+ Add Profile</button>
@@ -1519,13 +1519,18 @@ function calcNumbers(name,dob,time='',place=''){
   return{lp,lpRaw,expr,soul,pers,bday,mat,att,cexpr,csoul,cpers,py,pm,pd,psychic,hp,balance,kl,kd,pins,chals,pers2,cp,ca,a1,a2,a3,lsc,lsm,sub,eR,sR,pR,cornerstone,capstone,firstVowel,rationalThought,lpExprBridge,soulPersBridge,kabbalah,planes,domPlane,dsPhys,dsSoul,diamond,essenceData,firstName,middleName,lastName,vedic,hourNum,diurnal,placeVal,placeCompat};
 }
 
-const SCHEMA_VERSION=5;
+const SCHEMA_VERSION=6;
 let profiles=JSON.parse(localStorage.getItem('lumina_v2')||'[]');
 let ai=parseInt(localStorage.getItem('lumina_v2_ai')||'0');
 function sp(){localStorage.setItem('lumina_v2',JSON.stringify(profiles)); if(typeof syncProfilesToRemote==='function'){syncProfilesToRemote();}}
 function sa(){localStorage.setItem('lumina_v2_ai',String(ai));}
-// Schema migration: sanitize legacy profiles (ensure name/dob/nick/time/place) and stamp version
-(function migrate(){try{const v=parseInt(localStorage.getItem('lumina_schema')||'0');if(v<SCHEMA_VERSION){profiles=(Array.isArray(profiles)?profiles:[]).filter(p=>p&&p.name&&p.dob).map(p=>({name:String(p.name),dob:String(p.dob),nick:(p.nick||String(p.name).split(' ')[0]),time:String(p.time||''),place:String(p.place||''),plan:String(p.plan||'free')}));if(!(ai>=0&&ai<profiles.length))ai=0;sp();sa();localStorage.setItem('lumina_schema',String(SCHEMA_VERSION));}}catch(e){}})();
+// Schema migration: sanitize legacy profiles (ensure name/dob/nick/time/place) and stamp version.
+// v6 (2026-09-08): 'plan' was a purely client-side, self-service toggle with no payment behind
+// it whatsoever (see toggleCurrentProfilePlan/simulatedSurchargePayment) — any existing 'paid'
+// profile was self-granted, never actually paid for, so this migration resets everyone to
+// 'free' as part of closing that hole. Real entitlements will come from a verified Razorpay
+// subscription once that's wired up (see handoff.md).
+(function migrate(){try{const v=parseInt(localStorage.getItem('lumina_schema')||'0');if(v<SCHEMA_VERSION){profiles=(Array.isArray(profiles)?profiles:[]).filter(p=>p&&p.name&&p.dob).map(p=>({name:String(p.name),dob:String(p.dob),nick:(p.nick||String(p.name).split(' ')[0]),time:String(p.time||''),place:String(p.place||''),plan:(v<6?'free':String(p.plan||'free'))}));if(!(ai>=0&&ai<profiles.length))ai=0;sp();sa();localStorage.setItem('lumina_schema',String(SCHEMA_VERSION));}}catch(e){}})();
 
 function createProfile(){
   const name=document.getElementById('inp-name').value.trim();
@@ -1641,15 +1646,12 @@ function renderDash(){
   initLockOverlays();
 }
 
-function toggleCurrentProfilePlan(){
-  if(!profiles[ai])return;
-  profiles[ai].plan=(profiles[ai].plan==='paid')?'free':'paid';
-  sp();
-  renderDash();
-  renderPT();
-  initLockOverlays();
-  showToast(`Profile "${profiles[ai].nick}" switched to ${profiles[ai].plan.toUpperCase()} Tier ✦`);
-}
+// NOTE: toggleCurrentProfilePlan() is defined once, further down, as a thin wrapper around the
+// shared togglePlan(i) — the real upgrade/downgrade restriction lives there (search
+// "Self-service upgrade is intentionally disabled" if you're looking for it). A near-duplicate
+// declaration used to live here too; JS keeps only the last `function` declaration of a given
+// name in a scope, so it was silently dead code — removed 2026-09-08 rather than left as a trap
+// for the next edit.
 
 function orbPurple(v,l,m){return`<div class="norb"><div class="nval" style="color:var(--purple)">${v}</div><div class="nlbl">${l}</div><div class="nmng">${m||''}</div></div>`;}
 
@@ -2370,11 +2372,22 @@ function renderPT(){
   }).join('');
 }
 function togglePlan(i){
-  profiles[i].plan = (profiles[i].plan === 'paid') ? 'free' : 'paid';
+  if(!profiles[i])return;
+  // Self-service upgrade is intentionally disabled (2026-09-08): this used to just flip the
+  // flag client-side with no payment behind it whatsoever — anyone could grant themselves
+  // Premium with one click. Downgrading (paid -> free) is still allowed since it can't grant
+  // anything. Real upgrades belong behind a verified Razorpay subscription (see handoff.md),
+  // not this button. This is the single shared implementation both the dashboard's "Upgrade to
+  // Premium" button and the profile list's per-profile toggle route through.
+  if(profiles[i].plan!=='paid'){
+    showToast('Premium subscriptions are launching soon — visit the Premium tab for details ✦');
+    return;
+  }
+  profiles[i].plan='free';
   sp();
   renderPT();
   renderDash();
-  showToast(`Profile "${profiles[i].nick}" plan changed to ${profiles[i].plan.toUpperCase()} Tier ✦`);
+  showToast(`Profile "${profiles[i].nick}" switched to FREE Tier ✦`);
 }
 function toggleCurrentProfilePlan(){
   togglePlan(ai);
@@ -3690,33 +3703,10 @@ async function generateAkashicReading() {
 }
 
 function simulatedSurchargePayment() {
-  const cardInput = document.getElementById('pay-card-num').value.trim();
-  if (!cardInput) {
-    showToast('Please enter a valid Card Number or UPI Address');
-    return;
-  }
-
-  showToast('Connecting with bank terminal...');
-  const payBtn = document.querySelector('#akashic-paywall button');
-  if (payBtn) {
-    payBtn.disabled = true;
-    payBtn.innerHTML = `<span class="loader"></span> Exchanging spiritual & material energy...`;
-  }
-
-  setTimeout(() => {
-    const p = profiles[ai];
-    if (p) {
-      p.akashicExtraSlots = (p.akashicExtraSlots || 0) + 1;
-      sp();
-      showToast('Transaction Approved! ₹1,100 INR received. 1 New Record Slot unlocked ✦');
-      document.getElementById('pay-card-num').value = '';
-      renderAkashic();
-    }
-    if (payBtn) {
-      payBtn.disabled = false;
-      payBtn.innerHTML = `Pay ₹1,100 INR & Unlock Record Slot`;
-    }
-  }, 3500);
+  // This never actually charged anyone (accepted any text as a "card number", waited 3.5s, then
+  // granted a free slot) — disabled 2026-09-08 pending a real Razorpay-backed checkout. See
+  // handoff.md. Intentionally does not touch profiles[ai].akashicExtraSlots.
+  showToast('Extra record slots will be purchasable soon via a real, secure checkout ✦');
 }
 
 function downloadAkashicReport() {

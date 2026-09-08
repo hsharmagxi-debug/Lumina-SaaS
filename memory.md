@@ -358,6 +358,88 @@ problem was "you're not even talking to the new server." Found the real PID via
 change, if a curl test doesn't reflect the edit, check for a stale listener on the port before
 assuming the code is wrong.**
 
+## 11. CRITICAL: fake premium tier / no payment gateway (2026-09-08, same session as LinkedIn)
+
+User-reported concern: "anyone can select which tier they want, premium or free, without being
+a paid subscriber, and can also access all premium tools without paying anything." Investigated
+before touching anything — confirmed, and the actual shape was worse than the report:
+
+1. **The tier selector was fully client-side and defaulted to Premium.** Both profile-creation
+   forms (`#inp-plan` in the calculator, `#new-plan` in "Manage Profiles") had
+   `<option value="paid" selected>` — brand-new profiles were Premium by default. A one-click
+   "Upgrade to Premium Tier" button (`toggleCurrentProfilePlan()` → `togglePlan(i)`) just flipped
+   `profiles[i].plan` in `localStorage` with zero payment check.
+2. **The "payment" flow was entirely fake.** `simulatedSurchargePayment()` (the ₹1,100 Akashic
+   extra-slot purchase) accepted literally any text as a "card number", showed a fake 3.5-second
+   spinner ("Exchanging spiritual & material energy..."), then granted the slot unconditionally.
+   The Monthly ($11)/Yearly ($111) subscription buttons ("Manage Subscription", "Plan Details")
+   just call `showToast(...)` — no checkout of any kind. No Stripe/Razorpay/PayPal SDK, keys, or
+   endpoint exist anywhere in this repo, and no Lumina-specific payment credentials exist in
+   `C:\Projects\Credentials\.env` either — confirmed via grep before assuming.
+3. **Even server-side storage couldn't have helped as-is.** `server.ts`'s `POST /api/profiles`
+   stores/returns whatever `plan` the client sends, for whatever `email` the client claims, with
+   **no Firebase ID-token verification at all** — a second, independent vulnerability (anyone
+   can read or overwrite anyone else's profiles by knowing/guessing their email), found while
+   investigating the first one, not yet fixed (see below).
+4. **A near-duplicate `toggleCurrentProfilePlan()` function existed** (two separate
+   `function toggleCurrentProfilePlan(){...}` declarations in the same top-level scope). My
+   first fix attempt edited the wrong one — JS keeps only the *last* declaration of a given
+   function name in a scope, so the first one was silently dead code, shadowed by a second
+   definition further down that called a shared `togglePlan(i)` helper (also used by the
+   profile-list's per-row Upgrade/Downgrade button). **Caught this by re-reading the file for
+   all declarations before trusting the first fix** — the real, live implementation is
+   `togglePlan(i)`; the dead duplicate was removed and replaced with a comment pointing to it,
+   rather than left as a trap for a future edit.
+
+**User's decision, asked before doing anything irreversible:** (a) apply an immediate stopgap
+now to close the free-access hole, (b) real payment gateway to build toward: **Razorpay**
+(already used for KPI Hub; ₹1,100 INR pricing already present in the current fake flow suggests
+India-focused pricing).
+
+**Stopgap shipped and verified this session** (this is *not* the real fix — see handoff.md's
+CRITICAL banner):
+- `index.html`: both plan `<select>`s now default to `free`; the `paid` option is `disabled`
+  and labeled "Coming Soon — subscribe from the Premium tab". `togglePlan(i)` (the real,
+  de-duplicated implementation) now only allows `paid` → `free`; attempting `free` → `paid`
+  shows a toast ("Premium subscriptions are launching soon...") and does not change anything.
+  `simulatedSurchargePayment()` now only shows a toast and no longer touches
+  `profiles[ai].akashicExtraSlots`. `SCHEMA_VERSION` bumped 5→6 with a migration step that
+  resets every existing profile's `plan` to `'free'` regardless of prior value — since no
+  "paid" profile up to this point was ever a real payment, there's nothing legitimate to
+  preserve.
+- `server.ts`: `POST /api/profiles` now maps every incoming profile through
+  `{...p, plan: "free"}` before writing to Firestore, regardless of what the client sent —
+  defense in depth alongside the client-side fix.
+- **Verified directly, not just by reading the diff**: restarted the dev server (killed a stale
+  PID first, confirmed via `Get-Process ... StartTime` it was this session's own process before
+  killing), loaded the app in a real browser tab, confirmed via `read_page` that both selects
+  render `free` selected / `paid` disabled with the new label. Used `javascript_tool` (browser
+  console execution) rather than fighting through unrelated SPA navigation to exercise the
+  actual functions: created a throwaway test profile, called `togglePlan()` on a `free` profile
+  (blocked, correct toast, plan unchanged), set it to `paid` and called `togglePlan()` again
+  (allowed, downgraded to `free`, correct toast), called `simulatedSurchargePayment()` (toast
+  only, `akashicExtraSlots` unchanged) — then deleted the test profile. `npm run lint`
+  (`tsc --noEmit`) clean on the `server.ts` change.
+- A live `curl -X POST /api/profiles` with `plan:"paid"` got `PERMISSION_DENIED` from Firestore
+  itself before ever reaching my sanitization logic's effect being externally observable — a
+  **separate, pre-existing Firestore rules behavior**, not something this session touched or
+  root-caused further. Worth knowing about but out of scope for this fix.
+
+**Still open, genuinely unresolved — do not consider this "fixed" until these exist:**
+- `/api/profiles` has no auth check at all (point 3 above). Needs Firebase ID-token
+  verification middleware (verify the token server-side via the Admin SDK we already wired up
+  for Tier 2 OAuth, extract the UID, and use *that* — never a client-supplied email — as the
+  Firestore document key).
+- No real payment gateway exists. Razorpay was the user's choice; building this out is a
+  distinct, substantial follow-up (Razorpay account/keys, checkout UI, a webhook endpoint that
+  verifies Razorpay's payment signature server-side, and entitlement storage keyed to the
+  verified Firebase UID that every premium-gated feature actually checks against — not the
+  `plan` field on a client-supplied profile object, which is architecturally the wrong place
+  for this regardless of how well-guarded the write path is).
+- Today's stopgap makes the app **free-tier-only** — nobody, including a real future paying
+  customer, can become Premium until the real integration exists. That trade-off was explicit
+  and user-approved, not an oversight.
+
 ## 10. Where every credential lives
 
 All in `C:\Projects\Credentials\.env`, under a `# LUMINA-SAAS — ...` comment block per provider,

@@ -311,9 +311,21 @@ async function startServer() {
         return res.status(400).json({ error: "Profiles must be an array." });
       }
 
+      // Defense in depth (2026-09-08): this endpoint has no auth check at all yet — it trusts
+      // whatever `email` the caller claims, which is its own separate problem (anyone can read
+      // or overwrite anyone else's saved profiles by knowing/guessing their email; needs a real
+      // Firebase ID-token verification middleware, not fixed here). Independently of that,
+      // `plan` used to be a value the client could set to "paid" with zero payment behind it —
+      // force it to "free" server-side regardless of what's sent, until a real Razorpay-backed
+      // entitlement check replaces this. See handoff.md.
+      const sanitizedProfiles = (Array.isArray(profiles) ? profiles : []).map((p: any) => ({
+        ...p,
+        plan: "free",
+      }));
+
       const db = getDb();
       const docRef = doc(db, "user_profiles", email.toLowerCase());
-      await setDoc(docRef, { profiles, updatedAt: new Date().toISOString() });
+      await setDoc(docRef, { profiles: sanitizedProfiles, updatedAt: new Date().toISOString() });
 
       res.json({ success: true, message: "Profiles saved to Firestore successfully." });
     } catch (error: any) {
