@@ -193,14 +193,14 @@ select option{background:#0C0C0E;color:var(--txt)}
   line-height: 1.6;
   margin-bottom: 18px;
 }
-/* #tab-consensus and #tab-akashic are excluded from the paywall (2026-09-08, held back
-   deliberately) -- their AI prompt still writes in 5 real practicing numerologists' names/
-   identities without consent (see handoff.md). Charging for that compounds the exposure, so
-   these two stay free/unlisted-from-the-paid-pitch until renamed to original archetypes. */
-body.free-tier .tab-content:not(#tab-dashboard):not(#tab-membership):not(#tab-profiles):not(#tab-consensus):not(#tab-akashic) > .premium-lock-overlay {
+/* #tab-consensus/#tab-akashic were temporarily excluded from the paywall (2026-09-08) while
+   their AI prompt still wrote in 5 real practicing numerologists' names/identities without
+   consent -- that's fixed now (renamed to original archetypes, see handoff.md), so Category E
+   is back behind Premium like Categories A-D, per the original 3-package plan. */
+body.free-tier .tab-content:not(#tab-dashboard):not(#tab-membership):not(#tab-profiles) > .premium-lock-overlay {
   display: block !important;
 }
-body.free-tier .tab-content:not(#tab-dashboard):not(#tab-membership):not(#tab-profiles):not(#tab-consensus):not(#tab-akashic) > *:not(.premium-lock-overlay) {
+body.free-tier .tab-content:not(#tab-dashboard):not(#tab-membership):not(#tab-profiles) > *:not(.premium-lock-overlay) {
   display: none !important;
 }
 .no-data{text-align:center;padding:32px;color:var(--txm);font-size:.78rem}
@@ -2078,11 +2078,12 @@ async function getAICounsel() {
     });
     
     if (!response.ok) {
-      throw new Error('Cosmic signals interrupted. Please try again.');
+      const errBody = await response.json().catch(() => ({}));
+      throw new Error(errBody.error || 'Cosmic signals interrupted. Please try again.');
     }
-    
+
     const data = await response.json();
-    
+
     // Render the beautiful AI Guidance
     let remediesHtml = data.alignedRemedies.map(r => `
       <div class="remedy" style="background:rgba(46,196,182,.04);border:1px solid rgba(46,196,182,.16)">
@@ -3719,11 +3720,21 @@ function renderAkashic() {
     return;
   }
 
-  // Akashic (Category E) is deliberately not payment-gated yet -- see the CSS comment above
-  // #tab-consensus/#tab-akashic and handoff.md's naming flag. This tab's own separate lock
-  // (independent of the global body.free-tier mechanism) used to check p.plan === 'paid'; kept
-  // permanently open here rather than deleted, so re-gating it later (once renamed) is a
-  // one-line change back, not a rebuild.
+  // Akashic (Category E) is back behind Premium (2026-09-09) now that the naming issue is
+  // fixed -- this tab's own separate lock (independent of the global body.free-tier mechanism)
+  // reads the server-verified entitlement, not the old spoofable per-profile p.plan field.
+  const akashicIsPremium = serverEntitlement.plan === 'premium';
+  if (!akashicIsPremium) {
+    document.getElementById('akashic-free-tier-lock').style.display = 'block';
+    document.getElementById('akashic-astrology-header').style.display = 'none';
+    document.getElementById('akashic-generator-box').style.display = 'none';
+    document.getElementById('akashic-reading-box').style.display = 'none';
+    document.getElementById('akashic-history-box').style.display = 'none';
+    document.getElementById('akashic-paywall').style.display = 'none';
+    document.getElementById('akashic-quota-badge').style.display = 'none';
+    return;
+  }
+
   document.getElementById('akashic-free-tier-lock').style.display = 'none';
   document.getElementById('akashic-astrology-header').style.display = 'block';
   document.getElementById('akashic-history-box').style.display = 'block';

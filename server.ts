@@ -9,7 +9,7 @@ import { cert, initializeApp as initAdminApp, getApps as getAdminApps, type App 
 import { getAuth as getAdminAuthSdk, type Auth as AdminAuth } from "firebase-admin/auth";
 import { getFirestore as getAdminFirestoreSdk, type Firestore as AdminFirestore } from "firebase-admin/firestore";
 import { createOAuthRouter } from "./oauth-providers";
-import { createBillingRouter } from "./billing";
+import { createBillingRouter, spendAiCredit } from "./billing";
 import fs from "fs";
 
 dotenv.config();
@@ -163,11 +163,20 @@ async function startServer() {
   }
 
   // API endpoint for AI Cosmic Guidance
-  // Not payment-gated yet (see the AI-lens naming flag in handoff.md -- Category E is held back
-  // from the paid packages until that's resolved), but still requires a real signed-in user so
-  // this isn't a fully anonymous, unmetered path to real Gemini spend.
+  // Category E (2026-09-09): back behind Premium now that the AI-lens naming issue is fixed.
+  // spendAiCredit is the real cost control -- decrements aiCreditsRemaining atomically before
+  // the Gemini call runs, so a premium user's fair-use allowance is what actually caps spend,
+  // not just the UI hiding the button.
   app.post("/api/consult", verifyAuth, async (req, res) => {
     try {
+      const uid = (req as any).uid as string;
+      const credited = await spendAiCredit(getAdminDb(), uid);
+      if (!credited) {
+        return res.status(402).json({
+          error: "You're out of AI credits for this period, or not on Premium. Visit the Premium tab to subscribe or buy Insight Credits.",
+        });
+      }
+
       const { name, dob, time, place, numerology, issue, category, urgency } = req.body;
 
       if (!issue) {
@@ -276,6 +285,14 @@ async function startServer() {
   // API endpoint for Akashic Readings & Soul Records
   app.post("/api/akashic", verifyAuth, async (req, res) => {
     try {
+      const uid = (req as any).uid as string;
+      const credited = await spendAiCredit(getAdminDb(), uid);
+      if (!credited) {
+        return res.status(402).json({
+          error: "You're out of AI credits for this period, or not on Premium. Visit the Premium tab to subscribe or buy Insight Credits.",
+        });
+      }
+
       const { name, dob, time, place, astrology, numerology } = req.body;
 
       const prompt = `
