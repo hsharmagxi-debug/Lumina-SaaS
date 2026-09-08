@@ -5,28 +5,85 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
-import { cert, initializeApp as initAdminApp, getApps as getAdminApps } from "firebase-admin/app";
+import { cert, initializeApp as initAdminApp, getApps as getAdminApps, type App as AdminApp } from "firebase-admin/app";
 import { getAuth as getAdminAuthSdk, type Auth as AdminAuth } from "firebase-admin/auth";
+import { getFirestore as getAdminFirestoreSdk, type Firestore as AdminFirestore } from "firebase-admin/firestore";
 import { createOAuthRouter } from "./oauth-providers";
+import { createBillingRouter } from "./billing";
 import fs from "fs";
 
 dotenv.config();
 
+let adminAppInstance: AdminApp | null = null;
+function getAdminApp(): AdminApp {
+  if (!adminAppInstance) {
+    // Two ways to supply the service account, since local dev and a real host (Railway, etc.)
+    // don't share a filesystem: LUMINA_FIREBASE_ADMIN_SDK_JSON (the whole key file's content,
+    // as one env var — what production uses) takes priority; LUMINA_FIREBASE_ADMIN_SDK_PATH
+    // (a local file path) is the local-dev fallback.
+    let serviceAccount: any;
+    if (process.env.LUMINA_FIREBASE_ADMIN_SDK_JSON) {
+      serviceAccount = JSON.parse(process.env.LUMINA_FIREBASE_ADMIN_SDK_JSON);
+    } else {
+      const keyPath = process.env.LUMINA_FIREBASE_ADMIN_SDK_PATH;
+      if (!keyPath || !fs.existsSync(keyPath)) {
+        throw new Error(
+          "Firebase Admin service account key not found. Set LUMINA_FIREBASE_ADMIN_SDK_JSON (the " +
+            "key file's content) or LUMINA_FIREBASE_ADMIN_SDK_PATH (a local file path) -- see " +
+            "Firebase Console -> Project Settings -> Service Accounts."
+        );
+      }
+      serviceAccount = JSON.parse(fs.readFileSync(keyPath, "utf8"));
+    }
+    adminAppInstance = getAdminApps().length ? getAdminApps()[0] : initAdminApp({ credential: cert(serviceAccount) });
+  }
+  return adminAppInstance;
+}
+
 let adminAuthInstance: AdminAuth | null = null;
 function getAdminAuth(): AdminAuth {
-  if (!adminAuthInstance) {
-    const keyPath = process.env.LUMINA_FIREBASE_ADMIN_SDK_PATH;
-    if (!keyPath || !fs.existsSync(keyPath)) {
-      throw new Error(
-        "Firebase Admin service account key not found. Set LUMINA_FIREBASE_ADMIN_SDK_PATH to the " +
-          "downloaded service-account JSON (Firebase Console -> Project Settings -> Service Accounts)."
-      );
-    }
-    const serviceAccount = JSON.parse(fs.readFileSync(keyPath, "utf8"));
-    const adminApp = getAdminApps().length ? getAdminApps()[0] : initAdminApp({ credential: cert(serviceAccount) });
-    adminAuthInstance = getAdminAuthSdk(adminApp);
-  }
+  if (!adminAuthInstance) adminAuthInstance = getAdminAuthSdk(getAdminApp());
   return adminAuthInstance;
+}
+
+// Admin Firestore -- unlike the client SDK used elsewhere in this file (getDb(), for
+// /api/profiles), this bypasses Firestore Security Rules entirely using the service account's
+// own privilege. That's the correct choice for billing.ts specifically: a Razorpay webhook has
+// no Firebase Auth session at all (only an HMAC signature to trust), so the client SDK would
+// always fail there with permission-denied -- confirmed by hand before this shipped, not assumed.
+let adminDbInstance: AdminFirestore | null = null;
+function getAdminDb(): AdminFirestore {
+  if (!adminDbInstance) {
+    // This project uses a NAMED Firestore database, not "(default)" -- getFirestore(app) with no
+    // second argument returns NOT_FOUND (confirmed by hand: a real signed-webhook smoke test
+    // failed with gRPC code 5 until this was added). Same firestoreDatabaseId the client SDK
+    // path (getDb() below) already reads, so both stay pointed at the same database.
+    const configPath = path.resolve(process.cwd(), "firebase-applet-config.json");
+    const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    adminDbInstance = config.firestoreDatabaseId
+      ? getAdminFirestoreSdk(getAdminApp(), config.firestoreDatabaseId)
+      : getAdminFirestoreSdk(getAdminApp());
+  }
+  return adminDbInstance;
+}
+
+// Verifies a Firebase ID token from `Authorization: Bearer <token>` and attaches the real,
+// server-trusted uid to the request. This replaces the old client-supplied-email model that
+// /api/profiles used to run on (see the 2026-09-08 security commit) -- every route that reads or
+// writes per-user data (profiles, entitlements, billing) needs this, not a client-sent identifier.
+async function verifyAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const authHeader = req.headers.authorization || "";
+  if (!authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Sign in required." });
+  }
+  try {
+    const decoded = await getAdminAuth().verifyIdToken(authHeader.slice(7));
+    (req as any).uid = decoded.uid;
+    next();
+  } catch (e: any) {
+    console.error("[auth] token verification failed:", e.message);
+    return res.status(401).json({ error: "Your session has expired -- please sign in again." });
+  }
 }
 
 let dbInstance: any = null;
@@ -63,11 +120,18 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json());
+  // `verify` captures the exact raw bytes onto req.rawBody -- Razorpay's webhook signature is
+  // computed over the literal request body, and re-serializing the parsed JSON before checking
+  // it isn't guaranteed to reproduce the same bytes (key order, whitespace). See billing.ts.
+  app.use(express.json({ verify: (req: any, _res, buf) => { req.rawBody = buf; } }));
 
   // Tier 2 social login (LinkedIn, Discord, ...): providers Firebase Auth doesn't support
   // natively. See oauth-providers.ts for the exchange logic and memory.md/handoff.md for why.
   app.use("/auth", createOAuthRouter(getAdminAuth));
+
+  // Premium subscriptions + one-off Insight Credits via Razorpay. See billing.ts for the package
+  // definitions, checkout/webhook logic, and the entitlements/{uid} Firestore schema.
+  app.use("/api/billing", createBillingRouter({ getAdminAuth, getAdminDb, verifyAuth }));
 
   // Helper to get or initialize GoogleGenAI client lazily
   function getAI() {
@@ -86,7 +150,10 @@ async function startServer() {
   }
 
   // API endpoint for AI Cosmic Guidance
-  app.post("/api/consult", async (req, res) => {
+  // Not payment-gated yet (see the AI-lens naming flag in handoff.md -- Category E is held back
+  // from the paid packages until that's resolved), but still requires a real signed-in user so
+  // this isn't a fully anonymous, unmetered path to real Gemini spend.
+  app.post("/api/consult", verifyAuth, async (req, res) => {
     try {
       const { name, dob, time, place, numerology, issue, category, urgency } = req.body;
 
@@ -194,7 +261,7 @@ async function startServer() {
   });
 
   // API endpoint for Akashic Readings & Soul Records
-  app.post("/api/akashic", async (req, res) => {
+  app.post("/api/akashic", verifyAuth, async (req, res) => {
     try {
       const { name, dob, time, place, astrology, numerology } = req.body;
 
@@ -277,16 +344,15 @@ async function startServer() {
     });
   });
 
-  // API endpoints for Firebase Firestore profile synchronization
-  app.get("/api/profiles", async (req, res) => {
+  // API endpoints for Firebase Firestore profile synchronization. Keyed by the caller's verified
+  // Firebase uid (see verifyAuth above) -- NOT a client-supplied email, which is how this used to
+  // let anyone read or overwrite anyone else's profiles by guessing their address.
+  app.get("/api/profiles", verifyAuth, async (req, res) => {
     try {
-      const email = req.query.email as string;
-      if (!email) {
-        return res.status(400).json({ error: "Email query parameter is required." });
-      }
+      const uid = (req as any).uid as string;
 
       const db = getDb();
-      const docRef = doc(db, "user_profiles", email.toLowerCase());
+      const docRef = doc(db, "user_profiles", uid);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -301,30 +367,22 @@ async function startServer() {
     }
   });
 
-  app.post("/api/profiles", async (req, res) => {
+  app.post("/api/profiles", verifyAuth, async (req, res) => {
     try {
-      const { email, profiles } = req.body;
-      if (!email) {
-        return res.status(400).json({ error: "Email is required." });
-      }
+      const uid = (req as any).uid as string;
+      const { profiles } = req.body;
       if (!Array.isArray(profiles)) {
         return res.status(400).json({ error: "Profiles must be an array." });
       }
 
-      // Defense in depth (2026-09-08): this endpoint has no auth check at all yet — it trusts
-      // whatever `email` the caller claims, which is its own separate problem (anyone can read
-      // or overwrite anyone else's saved profiles by knowing/guessing their email; needs a real
-      // Firebase ID-token verification middleware, not fixed here). Independently of that,
-      // `plan` used to be a value the client could set to "paid" with zero payment behind it —
-      // force it to "free" server-side regardless of what's sent, until a real Razorpay-backed
-      // entitlement check replaces this. See handoff.md.
-      const sanitizedProfiles = (Array.isArray(profiles) ? profiles : []).map((p: any) => ({
-        ...p,
-        plan: "free",
-      }));
+      // `plan` here is cosmetic/local-only bookkeeping, never the source of truth for what a
+      // profile can actually access -- that's entitlements/{uid} (see billing.ts), written only
+      // by the Razorpay webhook. Force it server-side so a stale or tampered client write can't
+      // reintroduce the free-upgrade hole closed on 2026-09-08.
+      const sanitizedProfiles = profiles.map((p: any) => ({ ...p, plan: "free" }));
 
       const db = getDb();
-      const docRef = doc(db, "user_profiles", email.toLowerCase());
+      const docRef = doc(db, "user_profiles", uid);
       await setDoc(docRef, { profiles: sanitizedProfiles, updatedAt: new Date().toISOString() });
 
       res.json({ success: true, message: "Profiles saved to Firestore successfully." });

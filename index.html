@@ -7,6 +7,7 @@
 <!-- Firebase Compat SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Marcellus&family=Raleway:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -192,10 +193,14 @@ select option{background:#0C0C0E;color:var(--txt)}
   line-height: 1.6;
   margin-bottom: 18px;
 }
-body.free-tier .tab-content:not(#tab-dashboard):not(#tab-membership):not(#tab-profiles) > .premium-lock-overlay {
+/* #tab-consensus and #tab-akashic are excluded from the paywall (2026-09-08, held back
+   deliberately) -- their AI prompt still writes in 5 real practicing numerologists' names/
+   identities without consent (see handoff.md). Charging for that compounds the exposure, so
+   these two stay free/unlisted-from-the-paid-pitch until renamed to original archetypes. */
+body.free-tier .tab-content:not(#tab-dashboard):not(#tab-membership):not(#tab-profiles):not(#tab-consensus):not(#tab-akashic) > .premium-lock-overlay {
   display: block !important;
 }
-body.free-tier .tab-content:not(#tab-dashboard):not(#tab-membership):not(#tab-profiles) > *:not(.premium-lock-overlay) {
+body.free-tier .tab-content:not(#tab-dashboard):not(#tab-membership):not(#tab-profiles):not(#tab-consensus):not(#tab-akashic) > *:not(.premium-lock-overlay) {
   display: none !important;
 }
 .no-data{text-align:center;padding:32px;color:var(--txm);font-size:.78rem}
@@ -1094,15 +1099,11 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
     <div style="font-size:2rem;margin-bottom:12px">⚡</div>
     <div style="font-family:'Cinzel',serif;font-size:1.2rem;color:var(--red);margin-bottom:6px">Access Quota Complete</div>
     <p style="font-size:0.78rem;color:var(--txd);line-height:1.6;max-width:500px;margin:0 auto 16px">
-      You have successfully built and downloaded your given quota of 10 records for this profile.
-      To query the Akashic Gateways and generate another high-dimension soul reading, a custom energy surcharge of <strong>₹1,100 INR</strong> is required.
+      You've used your Insight Credits for this period. Buy more below, or wait for your monthly allowance to renew.
     </p>
-    <div style="background:rgba(0,0,0,0.3);border:1px solid var(--bdr);border-radius:10px;padding:16px;max-width:380px;margin:0 auto 16px;text-align:left">
-      <div style="font-size:0.68rem;text-transform:uppercase;color:var(--gold);margin-bottom:8px;letter-spacing:1px;font-weight:700">Simulated Secure Gateway</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <input type="text" id="pay-card-num" placeholder="Card Number or UPI ID" style="font-size:0.75rem;padding:8px;background:rgba(255,255,255,0.02);border:1px solid var(--bdr);border-radius:6px;color:#fff;outline:none">
-        <button class="btn btn-purple btn-sm" onclick="simulatedSurchargePayment()" style="width:100%;font-weight:700">Pay ₹1,100 INR & Unlock Record Slot</button>
-      </div>
+    <div style="display:flex;gap:8px;max-width:320px;margin:0 auto">
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="openCreditsCheckout('single')">₹49 · 1 credit</button>
+      <button class="btn btn-purple btn-sm" style="flex:1" onclick="openCreditsCheckout('pack5')">₹199 · 5 credits</button>
     </div>
   </div>
 
@@ -1183,50 +1184,75 @@ footer a{color:var(--gold);text-decoration:none}footer a:hover{text-decoration:u
 <div class="tab-content" id="tab-membership">
   <div class="card" style="text-align:center;padding:28px 20px">
     <div style="font-family:'Cinzel Decorative',serif;font-size:1.8rem;color:var(--gold);margin-bottom:6px">💎 LUMINA PREMIUM</div>
-    <div class="section-sub" style="font-size:.85rem;max-width:550px;margin:0 auto 18px">Elevate your self-knowledge with our elite, high-accuracy multi-system analysis. Unlocking ultimate clarity, professional-grade insights, and personalized remedies.</div>
-    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:12px"><span class="badge" style="background:var(--purple);color:#fff;font-weight:600;padding:6px 12px">PREMIUM MEMBER ACCOUNT ACTIVE</span></div>
+    <div class="section-sub" style="font-size:.85rem;max-width:550px;margin:0 auto 18px">Five numeral systems, cross-referenced in one profile — Pythagorean, Chaldean, Vedic, Kabbalah, and Lo Shu — plus a nine-year forecast and a correction engine most tools skip entirely.</div>
+    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:12px"><span id="membership-status-badge" class="badge" style="background:var(--purple);color:#fff;font-weight:600;padding:6px 12px">Loading your plan…</span></div>
   </div>
 
-  <div class="two-col" style="margin-bottom:14px">
-    <!-- Monthly Plan -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-bottom:14px">
+    <!-- Monthly -->
     <div class="card" style="border:1px solid var(--bdr);display:flex;flex-direction:column;justify-content:space-between;padding:20px;position:relative">
       <div>
-        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold)">Individual Monthly</div>
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold)">Premium Monthly</div>
         <div style="font-size:.72rem;color:var(--txm);margin-bottom:12px">Billed monthly. Cancel anytime.</div>
         <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:16px">
-          <span style="font-family:'Cinzel',serif;font-size:2.2rem;color:var(--gl)">$11</span>
-          <span style="font-size:.8rem;color:var(--txm)">USD / month</span>
+          <span style="font-family:'Cinzel',serif;font-size:2.2rem;color:var(--gl)">₹299</span>
+          <span style="font-size:.8rem;color:var(--txm)">/ month</span>
         </div>
         <ul style="font-size:.74rem;color:var(--txd);line-height:1.7;margin-bottom:20px;padding-left:14px;list-style-type:circle">
-          <li>Complete Multi-System Dashboard</li>
-          <li>Real Vedic (Jyotish) planetary relations</li>
-          <li>Detailed Hebrew Kabbalah Path profiles</li>
-          <li>Cosmic Coordinates (Hour & Place alignments)</li>
+          <li>All five numeral systems, unlimited</li>
+          <li>Lo Shu grid + full Correction Engine</li>
+          <li>9-year forecast &amp; two-chart Compatibility</li>
         </ul>
       </div>
-      <button class="btn btn-outline" style="width:100%" onclick="showToast('Your subscription is fully active on this device ✦')">Manage Subscription</button>
+      <button class="btn btn-outline" style="width:100%" onclick="openPremiumCheckout('monthly')">Subscribe Monthly</button>
     </div>
 
-    <!-- Yearly Plan -->
+    <!-- Yearly -->
     <div class="card" style="border:1px solid var(--gold);display:flex;flex-direction:column;justify-content:space-between;padding:20px;background:linear-gradient(to bottom, var(--s1), rgba(201,168,76,0.03));position:relative">
-      <div class="badge new" style="position:absolute;top:12px;right:12px">POPULAR (SAVE $21)</div>
+      <div class="badge new" style="position:absolute;top:12px;right:12px">SAVE ₹1,089</div>
       <div>
-        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold)">Individual Yearly</div>
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold)">Premium Yearly</div>
         <div style="font-size:.72rem;color:var(--txm);margin-bottom:12px">Billed annually. Best value.</div>
         <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:16px">
-          <span style="font-family:'Cinzel',serif;font-size:2.2rem;color:var(--gl)">$111</span>
-          <span style="font-size:.8rem;color:var(--txm)">USD / year</span>
+          <span style="font-family:'Cinzel',serif;font-size:2.2rem;color:var(--gl)">₹2,499</span>
+          <span style="font-size:.8rem;color:var(--txm)">/ year</span>
         </div>
-        <div style="font-size:.68rem;color:var(--green);margin-bottom:12px;font-weight:600">✦ Includes $10 discount on annual billing!</div>
+        <div style="font-size:.68rem;color:var(--green);margin-bottom:12px;font-weight:600">✦ ~30% off the monthly rate</div>
         <ul style="font-size:.74rem;color:var(--txd);line-height:1.7;margin-bottom:20px;padding-left:14px;list-style-type:circle">
-          <li>All Monthly features included</li>
-          <li>Priority 5-Agent Consensus Syntheses</li>
-          <li>Advanced solutions and date selections</li>
-          <li>Unlimited PDF reports & profile slots</li>
+          <li>Everything in Monthly</li>
+          <li>Priority billing, one renewal a year</li>
+          <li>Same fair-use AI credit allowance</li>
         </ul>
       </div>
-      <button class="btn btn-gold" style="width:100%" onclick="showToast('Annual Plan active — $10 discount applied ✦')">Plan Details</button>
+      <button class="btn btn-gold" style="width:100%" onclick="openPremiumCheckout('yearly')">Subscribe Yearly</button>
     </div>
+
+    <!-- Insight Credits -->
+    <div class="card" style="border:1px solid var(--teal);display:flex;flex-direction:column;justify-content:space-between;padding:20px;position:relative">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--teal)">Insight Credits</div>
+        <div style="font-size:.72rem;color:var(--txm);margin-bottom:12px">One-off top-up, no subscription.</div>
+        <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">
+          <span style="font-family:'Cinzel',serif;font-size:2.2rem;color:var(--gl)">₹49</span>
+          <span style="font-size:.8rem;color:var(--txm)">/ credit</span>
+        </div>
+        <div style="font-size:.68rem;color:var(--green);margin-bottom:12px;font-weight:600">✦ or 5 for ₹199</div>
+        <ul style="font-size:.74rem;color:var(--txd);line-height:1.7;margin-bottom:20px;padding-left:14px;list-style-type:circle">
+          <li>Extra Consensus / Akashic AI readings</li>
+          <li>Beyond your monthly allowance</li>
+          <li>Works for Free-tier accounts too</li>
+        </ul>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="openCreditsCheckout('single')">Buy 1</button>
+        <button class="btn btn-teal btn-sm" style="flex:1" onclick="openCreditsCheckout('pack5')">Buy 5</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center;padding:16px;margin-bottom:14px">
+    <button id="membership-cancel-btn" class="btn btn-outline btn-sm" style="display:none" onclick="cancelPremiumSubscription()">Cancel Subscription</button>
+    <div style="font-size:.72rem;color:var(--txm);margin-top:8px">Payments processed securely by Razorpay. Cancel anytime — access continues until the end of your current billing period.</div>
   </div>
 
   <div class="card">
@@ -1569,12 +1595,21 @@ function launchApp(){document.getElementById('landing').style.display='none';doc
 
 function renderDash(){
   const p=profiles[ai];if(!p)return;
-  const plan=p.plan||'free';
-  const isFree=(plan==='free');
+  // Premium is account-wide now (tied to the signed-in user's real Razorpay subscription via
+  // entitlements/{uid}), not per-profile — serverEntitlement is the only source of truth. See
+  // fetchEntitlement(). profiles[i].plan is legacy/cosmetic and always 'free' server-side now.
+  const isFree=(serverEntitlement.plan!=='premium');
   if(isFree){
     document.body.classList.add('free-tier');
   }else{
     document.body.classList.remove('free-tier');
+  }
+  const cancelBtn=document.getElementById('membership-cancel-btn');
+  if(cancelBtn)cancelBtn.style.display=isFree?'none':'inline-flex';
+  const statusBadge=document.getElementById('membership-status-badge');
+  if(statusBadge){
+    statusBadge.textContent=isFree?'FREE TIER':'👑 PREMIUM MEMBER ACTIVE';
+    statusBadge.style.background=isFree?'var(--s3)':'var(--purple)';
   }
 
   // Render Membership Status Banner on Dashboard
@@ -1646,12 +1681,11 @@ function renderDash(){
   initLockOverlays();
 }
 
-// NOTE: toggleCurrentProfilePlan() is defined once, further down, as a thin wrapper around the
-// shared togglePlan(i) — the real upgrade/downgrade restriction lives there (search
-// "Self-service upgrade is intentionally disabled" if you're looking for it). A near-duplicate
-// declaration used to live here too; JS keeps only the last `function` declaration of a given
-// name in a scope, so it was silently dead code — removed 2026-09-08 rather than left as a trap
-// for the next edit.
+// NOTE: toggleCurrentProfilePlan() is defined once, further down — it just routes to the
+// Premium tab now, where real Razorpay checkout/cancellation live (see fetchEntitlement() and
+// openPremiumCheckout()). A near-duplicate declaration used to live here; JS keeps only the last
+// `function` declaration of a given name in a scope, so it was silently dead code — removed
+// 2026-09-08 rather than left as a trap for the next edit.
 
 function orbPurple(v,l,m){return`<div class="norb"><div class="nval" style="color:var(--purple)">${v}</div><div class="nlbl">${l}</div><div class="nmng">${m||''}</div></div>`;}
 
@@ -1995,11 +2029,20 @@ async function getAICounsel() {
   
   const p = profiles[ai];
   const N = calcNumbers(p.name, p.dob, p.time, p.place);
-  
+
+  const idToken = await getIdToken();
+  if (!idToken) {
+    btn.innerHTML = originalHtml;
+    resultDiv.innerHTML = '';
+    showToast('Please sign in to consult the AI Council ✦');
+    openAuthModal();
+    return;
+  }
+
   try {
     const response = await fetch('/api/consult', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
       body: JSON.stringify({
         name: p.name,
         dob: p.dob,
@@ -2347,7 +2390,9 @@ function renderPT(){
   el.innerHTML=profiles.map((pp,i)=>{
     const N=calcNumbers(pp.name,pp.dob);
     const dob=new Date(pp.dob).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-    const isPremium=pp.plan==='paid';
+    // Premium is account-wide (one Razorpay subscription covers every profile on this account),
+    // not per-profile -- read serverEntitlement, not this profile's own (legacy) plan field.
+    const isPremium=serverEntitlement.plan==='premium';
     const planBadge=isPremium?`<span class="badge" style="background:rgba(184,110,240,.12);border-color:rgba(184,110,240,.3);color:var(--purple)">💎 Premium</span>`:`<span class="badge" style="background:rgba(113,113,122,.12);border-color:rgba(113,113,122,.3);color:var(--txd)">🆓 Free</span>`;
     return `<div class="card" style="margin-bottom:8px;padding:12px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -2363,7 +2408,7 @@ function renderPT(){
           </div>
         </div>
         <div style="display:flex;gap:5px;align-items:center">
-          <button class="btn btn-outline btn-sm" onclick="togglePlan(${i})">${isPremium?'Downgrade':'Upgrade'}</button>
+          <button class="btn btn-outline btn-sm" onclick="toggleCurrentProfilePlan()">${isPremium?'Manage':'Upgrade'}</button>
           ${i!==ai?`<button class="btn btn-outline btn-sm" onclick="switchProfile(${i})">Switch</button>`:'<span class="badge" style="margin-right:0">Active</span>'}
           <button class="btn btn-danger btn-sm" onclick="deleteProfile(${i})">Del</button>
         </div>
@@ -2371,28 +2416,16 @@ function renderPT(){
     </div>`;
   }).join('');
 }
-function togglePlan(i){
-  if(!profiles[i])return;
-  // Self-service upgrade is intentionally disabled (2026-09-08): this used to just flip the
-  // flag client-side with no payment behind it whatsoever — anyone could grant themselves
-  // Premium with one click. Downgrading (paid -> free) is still allowed since it can't grant
-  // anything. Real upgrades belong behind a verified Razorpay subscription (see handoff.md),
-  // not this button. This is the single shared implementation both the dashboard's "Upgrade to
-  // Premium" button and the profile list's per-profile toggle route through.
-  if(profiles[i].plan!=='paid'){
-    showToast('Premium subscriptions are launching soon — visit the Premium tab for details ✦');
-    return;
-  }
-  profiles[i].plan='free';
-  sp();
-  renderPT();
-  renderDash();
-  showToast(`Profile "${profiles[i].nick}" switched to FREE Tier ✦`);
-}
+// Premium is a real, account-wide, Razorpay-backed subscription now (2026-09-08) — not a local
+// flag anyone could flip. This routes to the real checkout (free -> premium) or the real
+// cancellation endpoint (premium -> free), driven by serverEntitlement, the only source of
+// truth. See fetchEntitlement()/openPremiumCheckout()/cancelPremiumSubscription() below.
 function toggleCurrentProfilePlan(){
-  togglePlan(ai);
-  if(document.getElementById('tab-akashic').classList.contains('active')){
-    renderAkashic();
+  if(serverEntitlement.plan==='premium'){
+    switchTab('membership');
+  }else{
+    switchTab('membership');
+    showToast('Choose a plan below to unlock Premium ✦');
   }
 }
 function renderAgents(){const c=document.getElementById('agents-container');if(!c)return;c.innerHTML=AGENTS.map(a=>`<div class="agent-card"><div class="aname">✦ ${a.name}</div><div class="astyle">${a.style}</div><div class="pbar"><div class="pfill" style="width:0"></div></div></div>`).join('');}
@@ -2515,6 +2548,7 @@ try {
   
   auth.onAuthStateChanged((user) => {
     updateGDriveButton();
+    fetchEntitlement();
   });
 
   // Picks up the result of a signInWithRedirect() call (e.g. GitHub) after the browser
@@ -2541,6 +2575,124 @@ try {
   });
 } catch (e) {
   console.error("Firebase initialization failed:", e);
+}
+
+// ── PREMIUM SUBSCRIPTIONS & INSIGHT CREDITS (Razorpay) ──
+// Real, account-wide entitlement (entitlements/{uid} in Firestore, written only by the server's
+// Razorpay webhook — see billing.ts). serverEntitlement is a client-side cache of that; every
+// gate that matters (renderDash's body.free-tier toggle) reads it, never a locally-set flag.
+let serverEntitlement = { plan: 'free', aiCreditsRemaining: 0 };
+
+async function getIdToken() {
+  try {
+    if (auth && auth.currentUser) return await auth.currentUser.getIdToken();
+  } catch (e) {
+    console.error('getIdToken failed:', e);
+  }
+  return null;
+}
+
+async function fetchEntitlement() {
+  const token = await getIdToken();
+  if (!token) {
+    serverEntitlement = { plan: 'free', aiCreditsRemaining: 0 };
+    renderDash();
+    return;
+  }
+  try {
+    const res = await fetch('/api/billing/entitlement', { headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    if (data.entitlement) serverEntitlement = data.entitlement;
+  } catch (e) {
+    console.error('fetchEntitlement failed:', e);
+  }
+  renderDash();
+}
+
+async function openPremiumCheckout(packageKey) {
+  const token = await getIdToken();
+  if (!token) { showToast('Please sign in first to subscribe ✦'); openAuthModal(); return; }
+  if (typeof Razorpay === 'undefined') { showToast('Payment gateway is still loading — try again in a moment.'); return; }
+  try {
+    const res = await fetch('/api/billing/create-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ package: packageKey })
+    });
+    const data = await res.json();
+    if (!data.subscriptionId) { showToast(data.error || 'Could not start checkout.'); return; }
+    const rzp = new Razorpay({
+      key: data.keyId,
+      subscription_id: data.subscriptionId,
+      name: 'Lumina Numerology',
+      description: packageKey === 'monthly' ? 'Premium Monthly' : 'Premium Yearly',
+      theme: { color: '#C5A059' },
+      handler: function () {
+        showToast('Payment received — activating your subscription ✦');
+        setTimeout(fetchEntitlement, 2500);
+      },
+      modal: { ondismiss: function () { showToast('Checkout closed.'); } }
+    });
+    rzp.open();
+  } catch (e) {
+    console.error(e);
+    showToast('Network error — please try again.');
+  }
+}
+
+async function openCreditsCheckout(pack) {
+  const token = await getIdToken();
+  if (!token) { showToast('Please sign in first ✦'); openAuthModal(); return; }
+  if (typeof Razorpay === 'undefined') { showToast('Payment gateway is still loading — try again in a moment.'); return; }
+  try {
+    const res = await fetch('/api/billing/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ pack })
+    });
+    const data = await res.json();
+    if (!data.orderId) { showToast(data.error || 'Could not start checkout.'); return; }
+    const rzp = new Razorpay({
+      key: data.keyId,
+      order_id: data.orderId,
+      amount: data.amount,
+      currency: data.currency,
+      name: 'Lumina Numerology',
+      description: pack === 'single' ? '1 Insight Credit' : '5 Insight Credits',
+      theme: { color: '#2EC4B6' },
+      handler: function () {
+        showToast('Payment received — crediting your account ✦');
+        setTimeout(fetchEntitlement, 2500);
+      },
+      modal: { ondismiss: function () { showToast('Checkout closed.'); } }
+    });
+    rzp.open();
+  } catch (e) {
+    console.error(e);
+    showToast('Network error — please try again.');
+  }
+}
+
+async function cancelPremiumSubscription() {
+  const token = await getIdToken();
+  if (!token) { showToast('Please sign in first.'); return; }
+  if (!confirm('Cancel your Premium subscription? You keep access until the end of the current billing period.')) return;
+  try {
+    const res = await fetch('/api/billing/cancel-subscription', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message || 'Subscription cancelled.');
+      fetchEntitlement();
+    } else {
+      showToast(data.error || 'Could not cancel subscription.');
+    }
+  } catch (e) {
+    console.error(e);
+    showToast('Network error — please try again.');
+  }
 }
 
 function updateGDriveButton() {
@@ -2915,15 +3067,20 @@ function initLockOverlays(){
 let currentUser = JSON.parse(localStorage.getItem('lumina_v2_auth') || 'null');
 let isSyncingFromRemote = false;
 
-function syncProfilesToRemote() {
-  if (!currentUser || !currentUser.email) return;
+async function syncProfilesToRemote() {
+  // Keyed by the caller's verified Firebase uid server-side now, not a client-supplied email
+  // (see the 2026-09-08 security commit) — needs a real ID token, not just a signed-in-looking
+  // currentUser object (the still-fake Yahoo/Instagram providers have one but no real Firebase
+  // session, so they simply don't get cloud sync yet; that's correct, not a regression).
+  const token = await getIdToken();
+  if (!token) return;
   fetch('/api/profiles', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
     },
     body: JSON.stringify({
-      email: currentUser.email,
       profiles: profiles
     })
   })
@@ -2940,10 +3097,12 @@ function syncProfilesToRemote() {
   });
 }
 
-function syncProfilesFromRemote() {
-  if (!currentUser || !currentUser.email || isSyncingFromRemote) return Promise.resolve();
+async function syncProfilesFromRemote() {
+  if (isSyncingFromRemote) return Promise.resolve();
+  const token = await getIdToken();
+  if (!token) return Promise.resolve();
   isSyncingFromRemote = true;
-  return fetch(`/api/profiles?email=${encodeURIComponent(currentUser.email)}`)
+  return fetch('/api/profiles', { headers: { 'Authorization': 'Bearer ' + token } })
     .then(res => res.json())
     .then(data => {
       isSyncingFromRemote = false;
@@ -3555,19 +3714,11 @@ function renderAkashic() {
     return;
   }
 
-  const isPremium = p.plan === 'paid';
-  
-  if (!isPremium) {
-    document.getElementById('akashic-free-tier-lock').style.display = 'block';
-    document.getElementById('akashic-astrology-header').style.display = 'none';
-    document.getElementById('akashic-generator-box').style.display = 'none';
-    document.getElementById('akashic-reading-box').style.display = 'none';
-    document.getElementById('akashic-history-box').style.display = 'none';
-    document.getElementById('akashic-paywall').style.display = 'none';
-    document.getElementById('akashic-quota-badge').style.display = 'none';
-    return;
-  }
-
+  // Akashic (Category E) is deliberately not payment-gated yet -- see the CSS comment above
+  // #tab-consensus/#tab-akashic and handoff.md's naming flag. This tab's own separate lock
+  // (independent of the global body.free-tier mechanism) used to check p.plan === 'paid'; kept
+  // permanently open here rather than deleted, so re-gating it later (once renamed) is a
+  // one-line change back, not a rebuild.
   document.getElementById('akashic-free-tier-lock').style.display = 'none';
   document.getElementById('akashic-astrology-header').style.display = 'block';
   document.getElementById('akashic-history-box').style.display = 'block';
@@ -3643,6 +3794,14 @@ async function generateAkashicReading() {
   if (!p) return;
 
   const btn = document.getElementById('btn-akashic');
+
+  const idToken = await getIdToken();
+  if (!idToken) {
+    showToast('Please sign in to open the Akashic Gateways ✦');
+    openAuthModal();
+    return;
+  }
+
   btn.disabled = true;
   btn.innerHTML = `<span class="loader"></span> Opening Akashic Portals...`;
 
@@ -3654,7 +3813,7 @@ async function generateAkashicReading() {
 
     const res = await fetch('/api/akashic', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
       body: JSON.stringify({
         name: p.name,
         dob: p.dob,
@@ -3700,13 +3859,6 @@ async function generateAkashicReading() {
     btn.disabled = false;
     btn.innerHTML = `🌌 Retrieve Akashic Soul Record`;
   }
-}
-
-function simulatedSurchargePayment() {
-  // This never actually charged anyone (accepted any text as a "card number", waited 3.5s, then
-  // granted a free slot) — disabled 2026-09-08 pending a real Razorpay-backed checkout. See
-  // handoff.md. Intentionally does not touch profiles[ai].akashicExtraSlots.
-  showToast('Extra record slots will be purchasable soon via a real, secure checkout ✦');
 }
 
 function downloadAkashicReport() {
