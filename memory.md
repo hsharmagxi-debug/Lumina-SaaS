@@ -1,15 +1,19 @@
-# Lumina-SaaS — session memory (2026-09-05)
+# Lumina-SaaS — session memory (started 2026-09-05, most recently updated 2026-09-09)
 
-Detailed, dated log of everything done to this repo/app in this session. Kept inside the repo
-so it travels with the code. See also `handoff.md` (next-step instructions) and the global
-skill `lumina-saas` (`C:\Users\Dell\.claude\skills\lumina-saas\SKILL.md`) for a same-session-
-equivalent digest loadable from any working directory.
+Detailed, dated, chronological log of everything done to this repo/app across every session.
+Kept inside the repo so it travels with the code. See also `handoff.md` (next-step instructions,
+read that first for "what to actually do next") and the global skill `lumina-saas`
+(`C:\Users\Dell\.claude\skills\lumina-saas\SKILL.md`) for a same-session-equivalent digest
+loadable from any working directory.
 
 **Never commit real secret values to this file or anywhere else in this repo.** All credentials
 referenced below live only in `C:\Projects\Credentials\.env` (outside any git repo) under the
-`LUMINA_*` variable names — this file names the variables, never the values.
+`LUMINA_*` variable names — this file names the variables, never the values. Section 14 lists
+every credential and exactly where it lives.
 
-## 0. Repo basics
+---
+
+## 1. Repo basics
 
 - GitHub: `hsharmagxi-debug/Lumina-SaaS` (private). Local clone: `C:\Projects\Lumina-SaaS`.
 - Stack: Vite + React + Express. `server.ts` is the dev entry (`npm run dev` → `tsx server.ts`,
@@ -18,16 +22,19 @@ referenced below live only in `C:\Projects\Credentials\.env` (outside any git re
 - Firebase project backing auth: **`gen-lang-client-0531769124`** (display name in Firebase
   Console: "lumina-numerology"), authDomain `gen-lang-client-0531769124.firebaseapp.com`. This
   is an AI-Studio-generated app — same config values are baked into `firebase-applet-config.json`
-  at repo root and into `index.html`'s inline `firebaseConfig` object.
+  at repo root and into `index.html`'s inline `firebaseConfig` object. This project uses a
+  **named** Firestore database (`ai-studio-luminanumerology-aedb98cd-...`, read from
+  `firebase-applet-config.json`'s `firestoreDatabaseId`), not the default one — matters for any
+  future Admin SDK code, see section 12.
 - `npm install` and `npm run dev` both verified working cleanly (284 packages, 3 moderate
-  non-blocking vulnerabilities).
+  non-blocking vulnerabilities, as of the initial audit).
 
-## 1. Initial audit — found 8 of 9 login providers were fake
+## 2. Initial audit (2026-09-05) — found 8 of 9 login providers were fake
 
 The sign-in modal ("SIGN IN / REGISTER") offers 9 providers: Google, LinkedIn, GitHub,
 Instagram, Facebook, X/Twitter, Yahoo, Microsoft, Discord.
 
-**Before this session's fixes**, only Google was real (genuine Firebase `signInWithPopup` +
+**Before any of this work**, only Google was real (genuine Firebase `signInWithPopup` +
 `GoogleAuthProvider`). The other 8 were entirely client-side mocks:
 - 7 of them (LinkedIn, Instagram, Facebook, X, Yahoo, Microsoft, Discord) shared one fake
   "Secure {Provider} Sign-In" template that logged in as a hardcoded persona **"Cosmic Seeker"**
@@ -46,19 +53,14 @@ Settings → Authorized domains) and `http://localhost:3000` (Google Cloud Conso
 Credentials → the OAuth 2.0 Client matching `firebase-applet-config.json`'s `oAuthClientId` →
 Authorized JavaScript origins). Confirmed working end-to-end by the user afterward.
 
-## 2. Scope decision for wiring up the rest
+## 3. Scope decision for wiring up the rest
 
-User chose **"Tier 1 only"**: providers Firebase supports natively (no custom backend needed) —
-GitHub, Facebook, X/Twitter, Microsoft, Yahoo. In practice **Yahoo was never reached** (dropped
-implicitly once the other four were done); LinkedIn, Instagram, and Discord remain intentionally
-fake (Tier 2 — would need a custom backend + Firebase Admin SDK + service-account key, out of
-scope for this session).
+User chose **"Tier 1 only"** first: providers Firebase supports natively (no custom backend
+needed) — GitHub, Facebook, X/Twitter, Microsoft, Yahoo. LinkedIn, Instagram, and Discord were
+intentionally left fake at this point (Tier 2 — would need a custom backend + Firebase Admin SDK
++ service-account key, tackled in a later session — see section 9).
 
-**Result: 4 of 5 Tier 1 providers wired to real OAuth and user-confirmed working. The 5th
-(Microsoft) was wired and enabled but the live popup test was still pending user confirmation
-when this file was written — check `handoff.md` for current status.**
-
-## 3. GitHub — done, user-confirmed working
+### 3a. GitHub — done, user-confirmed working
 
 - Checked `hsharmagxi-debug`'s own Developer Settings first: no existing OAuth Apps/GitHub Apps.
 - Found an existing app **"KPIHub Production"** under the `thekpihub` org, but it had 0 users
@@ -75,44 +77,42 @@ when this file was written — check `handoff.md` for current status.**
     classic l/I/1/O/0 screenshot-OCR ambiguity. This caused a real GitHub 404 on the OAuth
     authorize URL until corrected in both `.env` and Firebase. **Lesson: for any credential
     read off a web UI, prefer `read_page`/`find` (exact DOM/accessibility-tree text) over
-    zooming into a screenshot — used exclusively for Facebook and Microsoft's secrets
-    afterward, with no further misreads.**
+    zooming into a screenshot** — this became the standard method for every credential read for
+    the rest of the project, with zero further misreads.
 - Enabled the **GitHub** provider in Firebase Authentication → Sign-in method, with that Client
   ID/Secret. Callback URL auto-matched.
 - Code: `index.html`'s `triggerFederatedLogin('github')` branch rewritten to call real
   `new firebase.auth.GithubAuthProvider()` (scope `user:email`) via `auth.signInWithPopup(p)`,
   mirroring the existing Google branch's pattern (loading-state button swap, `.then`/`.catch`,
   `submitInlineAuth(...)` on success).
-- **Detour that was reverted**: tried switching to `signInWithRedirect` purely so this session's
-  own browser automation could drive the flow end-to-end (a popup opens a separate OS-level
-  window the automation tool cannot see or control). The redirect *did* complete a real GitHub
-  authorize round-trip, but `auth.getRedirectResult()` came back empty afterward — root cause is
-  a genuine, documented Firebase limitation: redirect-based sign-in needs third-party storage
-  access between the app's origin (`localhost:3000`) and the Firebase authDomain
-  (`*.firebaseapp.com`), which modern Chrome's storage partitioning blocks by default, especially
-  on `localhost`. This would likely affect real users testing locally too, not just automation.
-  **Reverted GitHub back to `signInWithPopup`** (matching Google, the one provider proven to
-  work end-to-end by an actual human) and added a `getRedirectResult()` handler near Firebase
-  init anyway (harmless no-op for popup flows; kept in case a future provider ever uses redirect).
+- **Detour that was reverted**: tried switching to `signInWithRedirect` purely so browser
+  automation could drive the flow end-to-end (a popup opens a separate OS-level window
+  automation tools cannot see or control). The redirect *did* complete a real GitHub authorize
+  round-trip, but `auth.getRedirectResult()` came back empty afterward — root cause is a genuine,
+  documented Firebase limitation: redirect-based sign-in needs third-party storage access
+  between the app's origin (`localhost:3000`) and the Firebase authDomain (`*.firebaseapp.com`),
+  which modern Chrome's storage partitioning blocks by default, especially on `localhost`. This
+  would likely affect real users testing locally too, not just automation. **Reverted GitHub
+  back to `signInWithPopup`** and added a `getRedirectResult()` handler near Firebase init anyway
+  (harmless no-op for popup flows).
 - **Two unrelated pre-existing bugs fixed along the way**:
   1. `closeAuthModal()` never reset which inner view (`auth-initial-view` vs
      `auth-provider-view`) was showing — reopening the modal after a real-auth attempt that
-     didn't finish (error, or user navigating away) left it blank. Fixed by calling
-     `goBackToAuthInitial()` from `closeAuthModal()`, and also from the Google/GitHub/etc.
-     error-catch blocks.
+     didn't finish left it blank. Fixed by calling `goBackToAuthInitial()` from
+     `closeAuthModal()`, and also from the error-catch blocks.
   2. The `else if (provider === 'discord')` branch inside `triggerFederatedLogin` compared
-     against the wrong variable (`provider`, a *different*, unrelated global set during Firebase
-     init) instead of the function's own `providerName` parameter — meaning Discord's dedicated
-     fake-UI branch was **dead code**, always falling through to the generic 7-provider fake
-     template. Fixed to `providerName === 'discord'`.
+     against the wrong variable (`provider`, an unrelated global set during Firebase init)
+     instead of the function's own `providerName` parameter — Discord's dedicated fake-UI branch
+     was **dead code**, always falling through to the generic 7-provider fake template. Fixed to
+     `providerName === 'discord'`.
 - **User manually tested and confirmed working** (a real GitHub OAuth popup, real consent
   screen branded "Lumina Numerology (Dev)", successful login).
 
-## 4. X / Twitter — done, user-confirmed working
+### 3b. X / Twitter — done, user-confirmed working
 
 - X's free/Default Project only allows **one App**. An existing app,
-  `2096128023271477249nitro0dust` (tied to the `@nitro0dust` X account, unclear what else might
-  reference it), already existed under the Default Project.
+  `2096128023271477249nitro0dust` (tied to the `@nitro0dust` X account), already existed under
+  the Default Project.
 - User's choice: **reuse and rename** it rather than pay for a second project. Renamed to
   `Lumina-Numerology-Dev` (X's app-name field silently strips spaces — used hyphens instead of
   fighting that).
@@ -121,9 +121,8 @@ when this file was written — check `handoff.md` for current status.**
   - Type of App: Web App, Automated App or Bot (Confidential client)
   - Callback URI / Redirect URL: Firebase's handler URL
   - Website URL: X rejected `localhost` in *any* form (even `https://localhost:3000`) as "Not a
-    valid URL format" — used the Firebase project's own default domain
-    (`https://gen-lang-client-0531769124.firebaseapp.com`) as a placeholder here since this
-    field is informational metadata, not functionally load-bearing for the OAuth redirect itself.
+    valid URL format" — used the Firebase project's own default domain as a placeholder here
+    since this field is informational metadata, not functionally load-bearing.
   - Saving this step **auto-generated a new OAuth 2.0 Client ID/Secret pair** — saved to `.env`
     as `LUMINA_X_OAUTH2_CLIENT_ID` / `LUMINA_X_OAUTH2_CLIENT_SECRET` for completeness, but **this
     pair is NOT what Firebase actually uses**.
@@ -139,7 +138,7 @@ when this file was written — check `handoff.md` for current status.**
   `new firebase.auth.TwitterAuthProvider()` via `signInWithPopup`, same pattern as GitHub/Google.
 - **User manually tested and confirmed working.**
 
-## 5. Facebook — done, user-confirmed working
+### 3c. Facebook — done, user-confirmed working
 
 - No existing Facebook developer app at all — created one fresh via developers.facebook.com,
   named `Lumina-Numerology-Dev` (spaces worked fine here, unlike X).
@@ -149,69 +148,64 @@ when this file was written — check `handoff.md` for current status.**
   entangled Lumina with something unrelated for no benefit.
 - Publishing requirements (Business verification, App Review) were **left incomplete on
   purpose** — both are only required to go live/public; the app works fine for the
-  account-owner's own testing while in Development/Unpublished mode, which is all this session
-  needed.
+  account-owner's own testing while in Development/Unpublished mode.
 - Credentials, all under **App settings → Basic** (and Advanced for the Client Token):
   - App ID → `LUMINA_FB_APP_ID`
   - Client Token (Advanced tab, visible in plaintext, no re-auth needed) → `LUMINA_FB_CLIENT_TOKEN`
   - App Secret (masked; revealing it required a Facebook password re-entry dialog) → `LUMINA_FB_APP_SECRET`
   - **Gotcha**: the password re-auth dialog's "Confirm" button did not respond to automated
-    clicks at all (several attempts, including keyboard Enter) — **required the user to click it
-    manually** each time it appeared. Root cause not confirmed, but consistent with anti-bot
-    protection specifically on security-sensitive re-auth flows (this was not an issue for
-    Twitter/GitHub/Microsoft's non-password-gated secret reveals).
-  - Once revealed, the secret's display field was too narrow to show the whole 32-char value at
-    once — **read it reliably via `read_page`'s accessibility tree** (`textbox` node exposes the
-    full `value` as text) rather than trying to scroll/zoom pixel-by-pixel, which is what caused
-    the earlier GitHub misread. This became the standard method for the rest of the session.
+    clicks at all — **required the user to click it manually**. Not an issue for
+    Twitter/GitHub/Microsoft's non-password-gated secret reveals.
+  - Once revealed, the secret's display field was too narrow to show the whole value at once —
+    **read it reliably via `read_page`'s accessibility tree** rather than scrolling/zooming
+    pixel-by-pixel. This became the standard method for the rest of the project.
 - Redirect URI: added under the Facebook Login use case's own **Settings** tab → "Valid OAuth
-  Redirect URIs" → Firebase's handler URL. (Client OAuth login / Web OAuth login were already
-  Yes by default.)
+  Redirect URIs" → Firebase's handler URL.
 - Enabled the **Facebook** provider in Firebase with App ID + App Secret.
 - Code: added a `providerName === 'facebook'` branch calling real
   `new firebase.auth.FacebookAuthProvider()` (scope `email`) via `signInWithPopup`.
 - **User manually tested and confirmed working.**
 
-## 6. Microsoft — wired and enabled; live test pending at time of writing
+### 3d. Microsoft — done, user-confirmed working
 
 - No existing Azure/Entra app — created one fresh via portal.azure.com → App registrations, name
-  `Lumina Numerology Dev` (spaces fine here too), logged in as `nitr0dust@outlook.com`.
+  `Lumina Numerology Dev`, logged in as `nitr0dust@outlook.com`.
 - **Supported account types: "Any Entra ID Tenant + Personal Microsoft accounts"** — the
-  broadest option, so any Microsoft account (personal or work/school) can sign in, matching how
-  the other 4 real providers behave for any user.
+  broadest option, so any Microsoft account (personal or work/school) can sign in.
 - Redirect URI set at registration time: platform **Web**, URI = Firebase's handler URL.
 - Credentials:
   - Application (client) ID → `LUMINA_MS_CLIENT_ID`
-  - Directory (tenant) ID → `LUMINA_MS_TENANT_ID` (saved for reference; not currently used by
-    the Firebase-side config, which defaults to accepting any tenant given the account-type
-    choice above)
-  - Client secret, created under **Certificates & secrets** (description "Lumina Firebase
-    auth", expires 4/3/2027) → `LUMINA_MS_CLIENT_SECRET`. Read reliably via the `find` tool
-    against the accessibility tree (same reliable method as Facebook's secret) — the table's
-    displayed value was truncated with a "Copy to clipboard" affordance but no visible full text.
-- Enabled the **Microsoft** provider in Firebase with the Application (client) ID + secret
-  (Firebase's UI calls them "Application ID" / "Application secret").
+  - Directory (tenant) ID → `LUMINA_MS_TENANT_ID` (saved for reference; not used by the
+    Firebase-side config, which defaults to accepting any tenant given the account-type choice)
+  - Client secret, created under **Certificates & secrets** (expires 4/3/2027) →
+    `LUMINA_MS_CLIENT_SECRET`. Read reliably via `find` against the accessibility tree.
+- Enabled the **Microsoft** provider in Firebase with the Application (client) ID + secret.
 - Code: added a `providerName === 'microsoft'` branch calling real
   `new firebase.auth.OAuthProvider('microsoft.com')` (with `prompt: 'select_account'`) via
   `signInWithPopup`.
-- **As of the last message in this session, the user had not yet confirmed the live popup test
-  succeeded** — this is the one open item. See `handoff.md`.
+- **User manually tested and confirmed working** in a later pass of the same session (was the
+  one open item at one point; resolved before Tier 1 was declared fully done).
 
-## 7. Final state of all 9 providers
+### 3e. Final state of Tier 1 (all 5 Firebase-native providers)
 
-| Provider | Real or fake | Notes |
-|---|---|---|
-| Google | ✅ Real | Fixed `localhost` authorized-domain issue; user-confirmed |
-| GitHub | ✅ Real | Fresh dedicated app; user-confirmed |
-| X / Twitter | ✅ Real | Reused/renamed existing app; user-confirmed |
-| Facebook | ✅ Real | Fresh app, Development mode; user-confirmed |
-| Microsoft | ✅ Real (code+config done) | **Live test not yet confirmed by user** |
-| LinkedIn | ❌ Still fake | Tier 2 — needs custom backend, out of scope this session |
-| Instagram | ❌ Still fake | Tier 2 — same as LinkedIn |
-| Discord | ❌ Still fake | Tier 2 — same; also had the dead-code bug noted above (now fixed, but still routes to the fake template since `providerName === 'discord'` never got a real branch) |
-| Yahoo | ❌ Still fake | Was in the original Tier 1 scope list but never actually reached |
+| Provider | Status |
+|---|---|
+| Google | ✅ Real, user-confirmed |
+| GitHub | ✅ Real, user-confirmed |
+| X / Twitter | ✅ Real, user-confirmed |
+| Facebook | ✅ Real, user-confirmed |
+| Microsoft | ✅ Real, user-confirmed |
+| Yahoo | ❌ Still fake — never actually reached (was in original Tier 1 scope, dropped implicitly) |
 
-## 9. Tier 2 — Discord wired to real OAuth (2026-09-08), LinkedIn/Instagram deferred
+Yahoo (Tier 1, Firebase-native) remains open — see `handoff.md`. Would follow the same pattern
+as Microsoft/Facebook: create a Yahoo Developer app, enable the Yahoo provider in Firebase
+Console, add a `providerName === 'yahoo'` branch using
+`signInWithPopup(new firebase.auth.OAuthProvider('yahoo.com'))` — does NOT need the Tier 2
+custom-backend flow below, since Yahoo *is* natively supported by Firebase Auth.
+
+---
+
+## 4. Tier 2 (2026-09-08) — Discord + LinkedIn wired to real OAuth, Instagram deferred
 
 User chose to tackle Tier 2 (LinkedIn, Instagram, Discord — none natively supported by Firebase
 Auth). Scope narrowed live during planning:
@@ -219,253 +213,299 @@ Auth). Scope narrowed live during planning:
   since Instagram Basic Display is being retired) only works if the signing-in account is a
   Business/Creator IG account linked to a Facebook Page the user admins — the user wasn't sure
   they had that set up, so this was dropped rather than building against an untestable flow.
-- **LinkedIn deferred mid-session.** LinkedIn Developer Portal needed a login I can't perform;
-  user said "not right now" when asked to log in. The server-side code is generic enough
-  (`oauth-providers.ts`'s `PROVIDERS` table) that adding LinkedIn later is just one more config
-  entry + one more `else if` in `index.html` — no architecture changes needed.
-- **Discord: done, user-confirmed working end-to-end.**
+  (Re-confirmed still true on 2026-09-09 — see section 13.)
+- **LinkedIn deferred mid-session, then picked back up same day.** LinkedIn Developer Portal
+  needed a login I can't perform; user said "not right now" initially, then came back to it.
+- **Discord: done first, user-confirmed working end-to-end.**
 
-### Architecture (new, shared by any future Tier 2 provider)
+### 4a. Architecture (shared by any Tier 2 provider, including a future Instagram)
 
 Unlike Tier 1 (Firebase's own `signInWithPopup` + built-in provider classes), Firebase has no
-native LinkedIn/Discord provider — so this needed a real custom-backend OAuth exchange:
+native LinkedIn/Discord/Instagram provider — so this needed a real custom-backend OAuth exchange:
 
-1. **`oauth-providers.ts`** (new file, repo root): a `PROVIDERS` config table (currently
-   `discord`, ready for `linkedin`) each describing its authorize URL, scope, token exchange,
-   and profile-fetch function. Exports `createOAuthRouter(getAdminAuth)`, an Express router with
-   two generic routes:
+1. **`oauth-providers.ts`** (new file, repo root): a `PROVIDERS` config table (`discord`,
+   `linkedin`) each describing its authorize URL, scope, token exchange, and profile-fetch
+   function. Exports `createOAuthRouter(getAdminAuth)`, an Express router with two generic
+   routes:
    - `GET /:provider/start` — builds the provider's authorize URL (client ID from env, redirect
-     URI computed from the request so it's `http://localhost:3000/auth/<provider>/callback` in
-     dev), with a **stateless HMAC-signed `state`** param for CSRF (no session store — signed
-     with `OAUTH_STATE_SECRET`, 10-minute expiry, verified via `crypto.timingSafeEqual`).
+     URI computed from the request), with a **stateless HMAC-signed `state`** param for CSRF (no
+     session store — signed with `OAUTH_STATE_SECRET`, 10-minute expiry, verified via
+     `crypto.timingSafeEqual`).
    - `GET /:provider/callback` — verifies `state`, exchanges the code server-side for an access
-     token + profile, then calls Firebase Admin's `createAuth().createCustomToken(uid, {provider})`
-     (uid is namespaced, e.g. `discord:123456`). Responds with a tiny HTML page that
-     `postMessage`s `{type: 'LUMINA_OAUTH_SUCCESS', token, profile}` (or `_ERROR`) back to
-     `window.opener` and closes itself.
-2. **`server.ts`**: added a lazy `getAdminAuth()` (mirrors the existing `getDb()` pattern) that
-   loads the Firebase Admin service-account JSON from `LUMINA_FIREBASE_ADMIN_SDK_PATH` and
-   mints an Admin `Auth` instance; mounted `app.use("/auth", createOAuthRouter(getAdminAuth))`.
-   Added `firebase-admin` as a real dependency (`npm install firebase-admin`).
+     token + profile, then calls Firebase Admin's `createCustomToken(uid, {provider})` (uid is
+     namespaced, e.g. `discord:123456`). Responds with a tiny HTML page that `postMessage`s
+     `{type: 'LUMINA_OAUTH_SUCCESS', token, profile}` (or `_ERROR`) back to `window.opener` and
+     closes itself.
+2. **`server.ts`**: added a lazy `getAdminAuth()` that loads the Firebase Admin service-account
+   JSON and mints an Admin `Auth` instance; mounted `app.use("/auth", createOAuthRouter(getAdminAuth))`.
+   Added `firebase-admin` as a real dependency.
 3. **`index.html`**: added `startOAuthPopup(providerName, fallbackAvatar)` — opens
    `window.open('/auth/<provider>/start', ...)`, listens for the `message` event (checking
    `event.origin` and `event.data.provider`), and on success calls
    `auth.signInWithCustomToken(token)` then `submitInlineAuth(...)` using the `profile` data from
-   the postMessage payload (custom-token sign-in does **not** populate `displayName`/`email`/
-   `photoURL` on the Firebase user object the way federated popup sign-in does — that's why the
-   server sends profile data separately rather than relying on the client reading it off
-   `result.user`). Also polls `popup.closed` to detect a cancelled sign-in and restore the
-   button. Replaced the old Discord fake-UI branch (hardcoded "Mystic Sage" persona) with a call
-   to this helper; added a new `providerName === 'linkedin'` branch using the same helper (code
-   is ready, just has no real LinkedIn app behind it yet).
+   the postMessage payload (**custom-token sign-in does NOT populate `displayName`/`email`/
+   `photoURL`** on the Firebase user object the way federated popup sign-in does — that's why the
+   server sends profile data separately). Also polls `popup.closed` to detect a cancelled
+   sign-in and restore the button.
 
-### LinkedIn — done, user-confirmed working (2026-09-08, same day, continued session)
+Adding a new Tier 2 provider (e.g. Instagram, once its prerequisite is met) is just: one more
+`PROVIDERS` entry + one more `else if (providerName === '...')` branch calling
+`startOAuthPopup(...)`. No architecture changes needed.
 
-- LinkedIn Developer Portal requires the app be tied to a **LinkedIn Company Page** — a personal
-  profile doesn't qualify ("For Individual Developers: API products... have a default Company
-  page associated with them and you must select that default Company page to proceed"). No
-  existing Page on the account, so the user created one live in the browser while watching
-  (**explicit real-time permission** for me to then drive the rest via Claude-in-Chrome,
-  superseding the initial caution about creating public-facing content unsupervised) — named
-  "Bhasad Group of Companies". That flow auto-enrolled the Page in a **Premium Company Page**
-  subscription (renews annually) as part of LinkedIn's own onboarding — not something I
-  triggered, but caught its "Auto-invite to follow" toggle (which would have messaged real
-  people — "Luis, Talia and 12 others") defaulting to ON during that onboarding and turned it
-  off before proceeding, confirmed via the "Auto-invite was turned off" toast.
-- Created app `Lumina-Numerology-Dev` (app ID `264524009`, Client ID `77npyu3t02qgfc`) tied to
-  that Page. Required an App logo (square image, min 100px) — no logo asset existed anywhere in
-  the repo, so generated a minimal 256x256 PNG by hand (raw PNG chunk writer in a throwaway Node
-  script — no ImageMagick/PIL available in this environment) in the app's navy/gold palette (a
-  gold diamond on the dark background matching `index.html`'s `--txm`/gold-button styling), then
-  uploaded it via `file_upload` from the session scratchpad directory.
-- Added the **"Sign In with LinkedIn using OpenID Connect"** product (the modern product — NOT
-  the older r_liteprofile/r_emailaddress APIs, which are being retired) — auto-provisioned
-  immediately on requesting access, no manual LinkedIn review needed.
-- Auth tab: added redirect `http://localhost:3000/auth/linkedin/callback`, confirmed persisted
-  after a page reload. Client Secret was already present (unlike Discord, no "Reset" needed) —
-  revealed via the eye icon, read through `read_page`'s accessibility tree as usual. OAuth 2.0
-  scopes section initially showed "No permissions added" right after adding the product — just
-  a stale render; a page reload showed `openid`/`profile`/`email` all present.
-- Credentials saved as `LUMINA_LINKEDIN_CLIENT_ID` / `LUMINA_LINKEDIN_CLIENT_SECRET`. No code
-  changes needed — `oauth-providers.ts`'s `linkedin` entry and `index.html`'s `linkedin` branch
-  were already written in anticipation of this (see the Tier 2 architecture section above).
-- **User manually tested and confirmed working**: real LinkedIn OAuth popup, landed back in the
-  app actually signed in.
-
-Both Tier 2 providers attempted this session are now done. Only Instagram remains deferred
-(see the "If continuing with Instagram" section in `handoff.md` for why and what it'd take).
-
-### Discord — done, user-confirmed working
+### 4b. Discord — done, user-confirmed working
 
 - No existing Discord application on the account — created fresh via
-  discord.com/developers/applications, named `Lumina-Numerology-Dev` (matches the naming
-  convention from Tier 1's X/Facebook apps). App ID `1546632758548234262`.
+  discord.com/developers/applications, named `Lumina-Numerology-Dev`. App ID
+  `1546632758548234262`.
 - **Gotcha: hCaptcha on app creation** — Discord threw a "Wait! Are you human?" hCaptcha
   challenge when submitting the "Create a new app" form. Per standing policy, bot-detection
-  challenges are never something I solve — asked the user to complete it themselves, then
-  continued once they confirmed the app existed.
+  challenges are never something I solve — asked the user to complete it themselves.
 - OAuth2 tab: added redirect `http://localhost:3000/auth/discord/callback`, saved. Public
-  Client toggle left OFF (confidential client, so a real Client Secret is issued — required
-  since the code exchange happens server-side, not in a public/native client).
-- **Gotcha: MFA on secret reveal** — Discord's Client Secret field starts hidden
-  ("Hidden for security"); clicking **Reset Secret** (necessary since Discord never shows the
-  original auto-generated secret, only a regenerated one) triggered the account's own
-  Multi-Factor Authentication prompt. Same category as Facebook's password re-auth from Tier
-  1 — asked the user to complete it themselves. Read the revealed secret via `read_page`'s
-  accessibility tree (`textbox` value), not a screenshot — the standard method since the
-  GitHub Client-ID misread earlier this project.
+  Client toggle left OFF (confidential client, so a real Client Secret is issued).
+- **Gotcha: MFA on secret reveal** — Discord's Client Secret field starts hidden; clicking
+  **Reset Secret** (necessary since Discord never shows the original auto-generated secret)
+  triggered the account's own Multi-Factor Authentication prompt. Asked the user to complete it
+  themselves. Read the revealed secret via `read_page`'s accessibility tree.
 - Credentials saved as `LUMINA_DISCORD_CLIENT_ID` / `LUMINA_DISCORD_CLIENT_SECRET`.
 - **User manually tested and confirmed working**: real Discord OAuth popup, real consent
   screen branded "Lumina-Numerology-Dev", landed back in the app actually signed in.
 
-### Firebase Admin SDK service-account key
+### 4c. LinkedIn — done, user-confirmed working (same day, picked back up)
 
-- Firebase Console → Project Settings → Service Accounts (project `gen-lang-client-0531769124` /
-  "lumina-numerology") → **Generate new private key**. Confirmed the "your app will lose access
-  to old key" style warning doesn't apply here — Firebase allows multiple simultaneous service
-  account keys, so this was non-destructive to anything else using the project.
-  No MFA/captcha friction on this step (already authenticated as the project owner in Chrome).
-- Downloaded JSON landed in the Windows Downloads folder as
-  `gen-lang-client-0531769124-firebase-adminsdk-fbsvc-8bc09caa1e.json` — moved to
-  `C:\Projects\Credentials\lumina-firebase-adminsdk.json` (never inside the repo, per the
-  standing convention). Path referenced by `LUMINA_FIREBASE_ADMIN_SDK_PATH`.
+- LinkedIn Developer Portal requires the app be tied to a **LinkedIn Company Page** — a personal
+  profile doesn't qualify. No existing Page on the account, so the user created one live in the
+  browser while watching (**explicit real-time permission** for me to then drive the rest via
+  Claude-in-Chrome, superseding the initial caution about creating public-facing content
+  unsupervised) — named "Bhasad Group of Companies". That flow auto-enrolled the Page in a
+  **Premium Company Page** subscription (renews annually) as part of LinkedIn's own onboarding —
+  not something I triggered, but caught its "Auto-invite to follow" toggle (which would have
+  messaged real people) defaulting to ON and turned it off before proceeding.
+- Created app `Lumina-Numerology-Dev` (app ID `264524009`, Client ID `77npyu3t02qgfc`) tied to
+  that Page. Required an App logo — none existed anywhere in the repo, so generated a minimal
+  256×256 PNG by hand (raw PNG chunk writer in a throwaway Node script — no ImageMagick/PIL
+  available) in the app's navy/gold palette, then uploaded it via `file_upload`.
+- Added the **"Sign In with LinkedIn using OpenID Connect"** product (the modern product — NOT
+  the older r_liteprofile/r_emailaddress APIs, which are being retired) — auto-provisioned
+  immediately, no manual LinkedIn review needed.
+- Auth tab: added redirect `http://localhost:3000/auth/linkedin/callback`, confirmed persisted
+  after a page reload. Client Secret was already present — revealed via the eye icon, read
+  through `read_page`'s accessibility tree. OAuth 2.0 scopes section initially showed "No
+  permissions added" right after adding the product — just a stale render; a page reload showed
+  `openid`/`profile`/`email` all present.
+- Credentials saved as `LUMINA_LINKEDIN_CLIENT_ID` / `LUMINA_LINKEDIN_CLIENT_SECRET`. No code
+  changes needed — `oauth-providers.ts`'s `linkedin` entry and `index.html`'s `linkedin` branch
+  were already written in anticipation of this.
+- **User manually tested and confirmed working**: real LinkedIn OAuth popup, landed back in the
+  app actually signed in.
 
-### Env var plumbing — a real difference from Tier 1, worth remembering
+### 4d. Firebase Admin SDK service-account key
+
+- Firebase Console → Project Settings → Service Accounts → **Generate new private key**.
+  Firebase allows multiple simultaneous service account keys, so this was non-destructive to
+  anything else using the project.
+- Downloaded JSON moved to `C:\Projects\Credentials\lumina-firebase-adminsdk.json` (never inside
+  the repo). Path referenced by `LUMINA_FIREBASE_ADMIN_SDK_PATH` (local dev) and later
+  `LUMINA_FIREBASE_ADMIN_SDK_JSON` (inline content, for Railway — see section 12).
+
+### 4e. Env var plumbing — a real difference from Tier 1
 
 Tier 1's provider secrets only ever needed to exist in **Firebase Console's own UI** — the
-app's own server process never touched them (Firebase's hosted auth backend does the OAuth
-itself). `C:\Projects\Credentials\.env` was purely this session's own record of what got typed
-into Firebase Console.
+app's own server process never touched them. `C:\Projects\Credentials\.env` was purely a record
+of what got typed into Firebase Console.
 
-**Tier 2 is different**: since `server.ts` now does its own OAuth code exchange, it genuinely
-needs these values in `process.env` at runtime. `dotenv.config()` (already in `server.ts`) only
-reads `./.env` relative to cwd — and **no such file existed in the repo before this session**
-(confirmed via `find . -maxdepth 1 -iname ".env*"` — only `.env.example` was present). Created
-`C:\Projects\Lumina-SaaS\.env` (confirmed gitignored via `git check-ignore`) holding
-`LUMINA_DISCORD_CLIENT_ID/SECRET`, `LUMINA_FIREBASE_ADMIN_SDK_PATH`, and `OAUTH_STATE_SECRET` —
-this is a genuinely new file needed for Tier 2 to run at all, separate from (but recording the
-same values as) the master `Credentials\.env`.
+**Tier 2 is different**: since `server.ts` does its own OAuth code exchange, it genuinely needs
+these values in `process.env` at runtime. `dotenv.config()` only reads `./.env` relative to cwd
+— and **no such file existed in the repo before Tier 2** (confirmed via
+`find . -maxdepth 1 -iname ".env*"` — only `.env.example` was present). Created
+`C:\Projects\Lumina-SaaS\.env` (confirmed gitignored via `git check-ignore`) — a genuinely new
+file needed for Tier 2 to run at all, separate from (but recording the same values as) the
+master `Credentials\.env`.
 
-### Stale dev server gotcha (new, worth remembering)
+### 4f. Stale dev server gotcha (recurred multiple times this project — always check)
 
-`npm run dev` failed with `EADDRINUSE: address already in use 0.0.0.0:3000` on first restart
-this session — a `node.exe` process from **2026-09-05** (the previous Tier-1 session) had been
-running unattended for 3 days, still serving the *old* code. `curl`ing `/auth/discord/start`
-against it 404'd, which could easily be misread as "the new route is broken" when the real
-problem was "you're not even talking to the new server." Found the real PID via
-`netstat -ano | grep :3000`, confirmed it was the expected stale `node.exe` (via
-`Get-Process -Id ... | select Path,StartTime`) before killing it. **Lesson: after any `server.ts`
-change, if a curl test doesn't reflect the edit, check for a stale listener on the port before
-assuming the code is wrong.**
+`npm run dev` failed with `EADDRINUSE: address already in use 0.0.0.0:3000` on restart more than
+once across sessions — a `node.exe` process from a *previous* session had been running
+unattended, still serving the *old* code. Testing against it produces confusing results that
+look like "the new code is broken" when the real problem is "you're not even talking to the new
+server." **Standing lesson: after any `server.ts` change, if a curl test doesn't reflect the
+edit, check for a stale listener first** — `netstat -ano | grep :3000`, confirm the PID via
+`Get-Process -Id ... | select Path,StartTime` before killing it (never kill blind).
 
-## 11. CRITICAL: fake premium tier / no payment gateway (2026-09-08, same session as LinkedIn)
+---
+
+## 5. CRITICAL security finding (2026-09-08): fake premium tier / no payment gateway
 
 User-reported concern: "anyone can select which tier they want, premium or free, without being
 a paid subscriber, and can also access all premium tools without paying anything." Investigated
 before touching anything — confirmed, and the actual shape was worse than the report:
 
 1. **The tier selector was fully client-side and defaulted to Premium.** Both profile-creation
-   forms (`#inp-plan` in the calculator, `#new-plan` in "Manage Profiles") had
-   `<option value="paid" selected>` — brand-new profiles were Premium by default. A one-click
-   "Upgrade to Premium Tier" button (`toggleCurrentProfilePlan()` → `togglePlan(i)`) just flipped
+   forms (`#inp-plan`, `#new-plan`) had `<option value="paid" selected>` — brand-new profiles
+   were Premium by default. A one-click "Upgrade to Premium Tier" button just flipped
    `profiles[i].plan` in `localStorage` with zero payment check.
 2. **The "payment" flow was entirely fake.** `simulatedSurchargePayment()` (the ₹1,100 Akashic
    extra-slot purchase) accepted literally any text as a "card number", showed a fake 3.5-second
-   spinner ("Exchanging spiritual & material energy..."), then granted the slot unconditionally.
-   The Monthly ($11)/Yearly ($111) subscription buttons ("Manage Subscription", "Plan Details")
-   just call `showToast(...)` — no checkout of any kind. No Stripe/Razorpay/PayPal SDK, keys, or
-   endpoint exist anywhere in this repo, and no Lumina-specific payment credentials exist in
-   `C:\Projects\Credentials\.env` either — confirmed via grep before assuming.
+   spinner, then granted the slot unconditionally. The Monthly ($11)/Yearly ($111) subscription
+   buttons just called `showToast(...)` — no checkout of any kind. No Stripe/Razorpay/PayPal
+   SDK, keys, or endpoint existed anywhere, and no Lumina-specific payment credentials existed
+   in `C:\Projects\Credentials\.env` either — confirmed via grep before assuming.
 3. **Even server-side storage couldn't have helped as-is.** `server.ts`'s `POST /api/profiles`
-   stores/returns whatever `plan` the client sends, for whatever `email` the client claims, with
+   stored/returned whatever `plan` the client sent, for whatever `email` the client claimed, with
    **no Firebase ID-token verification at all** — a second, independent vulnerability (anyone
-   can read or overwrite anyone else's profiles by knowing/guessing their email), found while
-   investigating the first one, not yet fixed (see below).
-4. **A near-duplicate `toggleCurrentProfilePlan()` function existed** (two separate
-   `function toggleCurrentProfilePlan(){...}` declarations in the same top-level scope). My
-   first fix attempt edited the wrong one — JS keeps only the *last* declaration of a given
-   function name in a scope, so the first one was silently dead code, shadowed by a second
-   definition further down that called a shared `togglePlan(i)` helper (also used by the
-   profile-list's per-row Upgrade/Downgrade button). **Caught this by re-reading the file for
-   all declarations before trusting the first fix** — the real, live implementation is
-   `togglePlan(i)`; the dead duplicate was removed and replaced with a comment pointing to it,
-   rather than left as a trap for a future edit.
+   could read or overwrite anyone else's profiles by knowing/guessing their email).
+4. **A near-duplicate `toggleCurrentProfilePlan()` function existed** — two separate
+   `function toggleCurrentProfilePlan(){...}` declarations in the same top-level scope. First fix
+   attempt edited the wrong one — JS keeps only the *last* declaration of a given name in a
+   scope, so the first was silently dead code, shadowed by a second definition further down that
+   called a shared `togglePlan(i)` helper. **Caught by re-reading the file for all declarations
+   before trusting the first fix.**
 
 **User's decision, asked before doing anything irreversible:** (a) apply an immediate stopgap
 now to close the free-access hole, (b) real payment gateway to build toward: **Razorpay**
-(already used for KPI Hub; ₹1,100 INR pricing already present in the current fake flow suggests
+(already used for KPI Hub; ₹1,100 INR pricing already present in the fake flow suggested
 India-focused pricing).
 
-**Stopgap shipped and verified this session** (this is *not* the real fix — see handoff.md's
-CRITICAL banner):
-- `index.html`: both plan `<select>`s now default to `free`; the `paid` option is `disabled`
-  and labeled "Coming Soon — subscribe from the Premium tab". `togglePlan(i)` (the real,
-  de-duplicated implementation) now only allows `paid` → `free`; attempting `free` → `paid`
-  shows a toast ("Premium subscriptions are launching soon...") and does not change anything.
-  `simulatedSurchargePayment()` now only shows a toast and no longer touches
-  `profiles[ai].akashicExtraSlots`. `SCHEMA_VERSION` bumped 5→6 with a migration step that
-  resets every existing profile's `plan` to `'free'` regardless of prior value — since no
-  "paid" profile up to this point was ever a real payment, there's nothing legitimate to
-  preserve.
-- `server.ts`: `POST /api/profiles` now maps every incoming profile through
-  `{...p, plan: "free"}` before writing to Firestore, regardless of what the client sent —
-  defense in depth alongside the client-side fix.
-- **Verified directly, not just by reading the diff**: restarted the dev server (killed a stale
-  PID first, confirmed via `Get-Process ... StartTime` it was this session's own process before
-  killing), loaded the app in a real browser tab, confirmed via `read_page` that both selects
-  render `free` selected / `paid` disabled with the new label. Used `javascript_tool` (browser
-  console execution) rather than fighting through unrelated SPA navigation to exercise the
-  actual functions: created a throwaway test profile, called `togglePlan()` on a `free` profile
-  (blocked, correct toast, plan unchanged), set it to `paid` and called `togglePlan()` again
-  (allowed, downgraded to `free`, correct toast), called `simulatedSurchargePayment()` (toast
-  only, `akashicExtraSlots` unchanged) — then deleted the test profile. `npm run lint`
-  (`tsc --noEmit`) clean on the `server.ts` change.
+**Stopgap shipped and verified same day** (this was later superseded by the real fix — see
+section 6):
+- `index.html`: both plan `<select>`s defaulted to `free`; `paid` disabled and labeled "Coming
+  Soon". `togglePlan(i)` allowed only `paid` → `free`. `simulatedSurchargePayment()` stopped
+  granting anything. `SCHEMA_VERSION` bumped 5→6, migration reset every existing profile's
+  `plan` to `'free'` regardless of prior value.
+- `server.ts`: `POST /api/profiles` mapped every incoming profile through `{...p, plan: "free"}`
+  before writing to Firestore, regardless of what the client sent.
+- **Verified directly, not just by reading the diff**: restarted the dev server (confirmed the
+  killed PID was this session's own via `Get-Process ... StartTime` first), loaded the app in a
+  real browser tab, confirmed via `read_page` that both selects rendered correctly. Used
+  `javascript_tool` (browser console execution) to exercise the actual functions directly:
+  created a throwaway test profile, called `togglePlan()` on a `free` profile (blocked, correct
+  toast), set it to `paid` and called again (allowed, downgraded, correct toast), called
+  `simulatedSurchargePayment()` (toast only, no grant) — then deleted the test profile.
+  `tsc --noEmit` clean.
 - A live `curl -X POST /api/profiles` with `plan:"paid"` got `PERMISSION_DENIED` from Firestore
-  itself before ever reaching my sanitization logic's effect being externally observable — a
-  **separate, pre-existing Firestore rules behavior**, not something this session touched or
-  root-caused further. Worth knowing about but out of scope for this fix.
+  itself — a separate, pre-existing Firestore rules behavior, not caused by or fixed in this
+  pass, just noted.
 
-**Still open, genuinely unresolved — do not consider this "fixed" until these exist:**
-- `/api/profiles` has no auth check at all (point 3 above). Needs Firebase ID-token
-  verification middleware (verify the token server-side via the Admin SDK we already wired up
-  for Tier 2 OAuth, extract the UID, and use *that* — never a client-supplied email — as the
-  Firestore document key).
-- No real payment gateway exists. Razorpay was the user's choice; building this out is a
-  distinct, substantial follow-up (Razorpay account/keys, checkout UI, a webhook endpoint that
-  verifies Razorpay's payment signature server-side, and entitlement storage keyed to the
-  verified Firebase UID that every premium-gated feature actually checks against — not the
-  `plan` field on a client-supplied profile object, which is architecturally the wrong place
-  for this regardless of how well-guarded the write path is).
-- Today's stopgap makes the app **free-tier-only** — nobody, including a real future paying
-  customer, can become Premium until the real integration exists. That trade-off was explicit
-  and user-approved, not an oversight.
+**What the stopgap deliberately did NOT fix (both closed in later sections):**
+- `/api/profiles` had no auth check at all — fixed in section 6 (Firebase ID-token
+  `verifyAuth` middleware).
+- No real payment gateway existed — fixed (architecturally) in section 6, still pending real
+  Razorpay keys as of section 13.
 
-## 12. Real Razorpay billing built + first live deployment (2026-09-08, later same session)
+---
+
+## 6. Real Razorpay billing built + first live deployment (2026-09-08, later same session)
 
 User explicitly asked to bind Razorpay to "3 recommended packages" in the live app and complete
-the architecture "in proper sequence." Built `billing.ts` (Razorpay Subscriptions for Premium
-Monthly ₹299/Yearly ₹2,499, Orders API for Insight Credits ₹49/₹199-for-5), Firebase ID-token
-`verifyAuth` middleware, migrated `/api/profiles` off the client-email model onto it, and wired
-real Razorpay Checkout.js into `index.html`'s Premium tab. Full detail and every gotcha
-(client-vs-Admin Firestore SDK, wrong Firestore database) is in section 11's neighboring commits
-— this section covers what happened getting it **live**, which is its own story.
+the architecture "in proper sequence." This section covers the full build; section 7 covers
+getting it actually live on Railway.
 
-### Razorpay account: existing account not usable, new one required
+### 6a. Package design
+
+Three real, payment-verified packages, matching the "Lumina Premium Blueprint" plan (artifact
+published earlier the same session, link in `handoff.md`):
+- **Premium Monthly** — ₹299/month, Razorpay Subscriptions API.
+- **Premium Yearly** — ₹2,499/year, Razorpay Subscriptions API.
+- **Insight Credits** — ₹49 single / ₹199 for 5, Razorpay Orders API (one-off, not recurring).
+
+### 6b. `billing.ts` (new file)
+
+- Razorpay Plans (Monthly/Yearly) are created once via the API and cached in Firestore
+  (`config/razorpay_plans_{test|live}` — separate cache per key mode, since test and live keys
+  have entirely separate Plan IDs), not hand-clicked in the dashboard.
+- Routes, all mounted at `/api/billing`:
+  - `GET /entitlement` (auth) — returns the caller's current plan + AI credits + the 3 package
+    definitions, for the client to render.
+  - `POST /create-subscription` (auth) — creates a Razorpay Subscription for Monthly/Yearly,
+    returns `{subscriptionId, keyId}` for client-side Checkout.js. No money moves here; this
+    only registers intent.
+  - `POST /create-order` (auth) — creates a Razorpay Order for Insight Credits.
+  - `POST /webhook` — **the only writer of entitlement state** (`entitlements/{uid}` in
+    Firestore). Verifies `X-Razorpay-Signature` via HMAC (using `req.rawBody`, captured by a
+    `verify` callback added to `server.ts`'s `express.json()` — signature verification needs
+    the exact original bytes, not a re-serialized copy) before trusting anything in the payload.
+    Handles `subscription.activated`/`charged` (grants `plan: "premium"` + resets AI credits to
+    the fair-use allowance), `subscription.cancelled`/`completed`/`expired` (reverts to
+    `plan: "free"`), and `payment.captured` for Insight Credits (increments
+    `aiCreditsRemaining`).
+  - `POST /cancel-subscription` (auth) — cancels at the end of the current billing period via
+    Razorpay's API (`cancel(id, false)`), not immediately.
+- `spendAiCredit(db, uid)` — exported helper, decrements `aiCreditsRemaining` atomically and
+  returns whether the caller is entitled to spend one (must be `plan: "premium"` with
+  `aiCreditsRemaining > 0`). Built here, wired into the actual AI routes later (section 13).
+
+### 6c. `server.ts` changes
+
+- `getAdminAuth()` split into `getAdminApp()` / `getAdminAuth()` / `getAdminDb()` so Auth and
+  Firestore share one initialized admin app.
+- New `verifyAuth` middleware: verifies a Firebase ID token from `Authorization: Bearer <token>`,
+  attaches the real `uid` to the request.
+- `/api/profiles` migrated **off** the old client-supplied-email model onto `verifyAuth` + the
+  caller's real `uid` — closes the auth hole flagged in section 5.
+- `/api/consult` and `/api/akashic` gated behind `verifyAuth` too (at this point, NOT yet behind
+  payment — see the naming-issue detour in section 6d below for why, and section 13 for how that
+  was later resolved and the credit-spend gate actually wired in).
+- `LUMINA_FIREBASE_ADMIN_SDK_JSON` (inline key content) added alongside the existing `_PATH`
+  (local file), so a host without this filesystem (Railway) can configure the same credential
+  via a plain env var.
+
+### 6d. A second real finding, discovered while researching pricing/positioning: the naming issue
+
+Before touching the pricing/copy, researched the app's existing AI feature (the "Master
+Consensus Engine", `/api/consult`) and found: its prompt generates readings explicitly in the
+voice of **5 real, named people** — Dr. J C Chaudhry, Sanjay B. Jumaani, Dr. Kartick
+Chakraborty, Anupam V. Kapil, Rajat Nayar. Checked via web search (not assumed): at least the
+first two are real, currently active, prominent professional numerologists in India who run
+their own paid consultancies (Dr. Chaudhry's is Guinness-recognised, 40 years,
+jcchaudhry.com / Chaudhry Nummero Pvt. Ltd.), with nothing in the codebase suggesting their
+knowledge or consent. Flagged as a genuine legal/reputational exposure (false endorsement),
+independent of the payment work — **decision at the time: hold Category E (Consensus + Akashic)
+back from the paid packages** (keep it free/unlisted) rather than monetize something built on
+an unresolved impersonation risk. This was reversed once the naming was actually fixed — see
+section 13.
+
+Also researched competitive positioning honestly rather than asserting an unverifiable "world
+first": multi-system AI synthesis is **not** unique to Lumina (jenova.ai's "AI Numerology
+Reader" already does it) — the defensible claim is the specific 5-system + forecast +
+correction-tools bundle, not an unverifiable superlative. Full reasoning, pricing rationale, and
+the 5-category breakdown are in the published artifact: **"Lumina Premium Blueprint"**
+(https://claude.ai/code/artifact/d53e2240-2e54-46b6-a4cd-e689a0140434).
+
+### 6e. `index.html` changes
+
+- Real Razorpay Checkout.js (`https://checkout.razorpay.com/v1/checkout.js`) wired to the 3
+  packages on the Premium tab, replacing the fake "Manage Subscription"/"Plan Details" buttons
+  and the fake ₹1,100 Akashic slot purchase.
+- Premium is now **account-wide** (one subscription covers every profile on the account, since
+  entitlements are keyed to the Firebase uid, not a per-profile field) — `renderDash()`'s
+  `body.free-tier` toggle (the single mechanism every premium-lock-overlay in the app depends
+  on) now reads a client-side cache of the server-verified entitlement (`serverEntitlement`,
+  refreshed via `fetchEntitlement()` on every `auth.onAuthStateChanged`), not the old
+  per-profile, spoofable `plan` field.
+- `togglePlan(i)`/`toggleCurrentProfilePlan()` repurposed to route to the real checkout/cancel
+  flow (via the Premium tab) instead of flipping a local flag.
+
+---
+
+## 7. Getting it actually live: Railway deployment (2026-09-08)
+
+No hosting existed for this app before this point — `npm run dev` on localhost was the whole
+story.
+
+### 7a. Razorpay account: existing account not usable, new one required
 
 The only available Razorpay account's live key (`rzp_live_...`) is approved for `thekpihub.com`
 only — Razorpay's own UI states additional websites on one account must share the same business
 model as the first, and numerology subscriptions vs. B2B SaaS analytics don't. **User chose to
 create a separate, new Razorpay account for Lumina** rather than misdeclare the business model.
-That signup (KYC included) is the user's own action — still pending as of this write-up. Real
-`RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`/`RAZORPAY_WEBHOOK_SECRET` are not wired in anywhere yet;
-`billing.ts`'s routes report "not configured" gracefully until they are (same pattern as the
-Tier 2 OAuth providers before their real credentials existed).
+That signup (KYC included) is the user's own action — **still pending as of section 13's
+status check-in on 2026-09-09.** Real `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET`/
+`RAZORPAY_WEBHOOK_SECRET` are not wired in anywhere yet; `billing.ts`'s routes report "not
+configured" gracefully until they are.
 
-### First real deployment: Railway, project "Lumina-SaaS"
+### 7b. Railway project setup
 
-No hosting existed for this app before this session — `npm run dev` on localhost was the whole
-story. Created a fresh Railway project (id `f1cea083-aaf5-4ee9-90c5-47f7f64d8995`, workspace
-"Himanshu Sharma's Projects" — deliberately NOT reusing `jubilant-growth`/`trade-cio-ashu`/
+Created a fresh Railway project (id `f1cea083-aaf5-4ee9-90c5-47f7f64d8995`, workspace "Himanshu
+Sharma's Projects" — deliberately NOT reusing `jubilant-growth`/`trade-cio-ashu`/
 `captivating-achievement`, all unrelated). Service `lumina-web` (id
 `e64e7e60-5596-48af-ba2d-b83b5a51890c`), deployed from `hsharmagxi-debug/Lumina-SaaS` main
 branch. Live domain: **https://lumina-web-production-b8df.up.railway.app**.
@@ -477,18 +517,19 @@ rather than guessing. Fixed by navigating straight to
 `https://github.com/apps/railway-app/installations/new` (same-tab, avoids the popup-window
 problem Railway's own in-dashboard "Configure GitHub App" link hits) and installing it scoped to
 just this one repo (not "All repositories" — least privilege). Needed the user for the GitHub
-sudo-mode 2FA step, same category as every other popup/2FA moment this project has hit.
+sudo-mode 2FA step.
 
-**Three real bugs found and fixed by actually curling the live site, not by trusting a green
-deploy** — each would have shipped silently broken otherwise:
+### 7c. Three real bugs found and fixed by actually curling the live site, not by trusting a green deploy
+
+Each of these would have shipped silently broken otherwise:
 
 1. **Build failure: `bun install --frozen-lockfile` exit 1.** Railway's Railpack builder
    auto-detects a package manager from whichever lockfile it finds; it found `bun.lock` (a
    leftover — `git log` confirms it was added exactly once, in the original AI-Studio scaffold
    commit, and never touched again — this project has only ever actually used `npm run dev`/
    `npm install`) and used bun instead of npm, then correctly refused to proceed because
-   `bun.lock` didn't reflect the new `razorpay` dependency (only `package-lock.json` did, via
-   npm). Fixed by deleting `bun.lock` entirely.
+   `bun.lock` didn't reflect the new `razorpay` dependency. Fixed by deleting `bun.lock`
+   entirely.
 2. **502 on every route despite deployment status SUCCESS.** Deploy logs showed the app
    actually starting fine ("Server running on http://localhost:3000", "Starting Container") —
    not a crash. Root cause: `server.ts` hardcoded `const PORT = 3000` and never read
@@ -503,42 +544,242 @@ deploy** — each would have shipped silently broken otherwise:
    `oauth-providers.ts` builds `redirect_uri` from) only reports `https` if told to trust the
    `X-Forwarded-Proto` header. Fixed with `app.set("trust proxy", true)`.
 
-Each of these three was a separate commit, in the order found — see git log
-(`b088191`, `f87b573`, `cc93689`). **Lesson worth repeating: "deployment succeeded" is not the
-same claim as "the app works" — the only way to know is to actually curl the live URL and read
-real response codes/headers, which is what caught all three.**
+Each of these three was a separate commit, in the order found — git log `b088191`, `f87b573`,
+`cc93689`. **Lesson worth repeating: "deployment succeeded" is not the same claim as "the app
+works" — the only way to know is to actually curl the live URL and read real response
+codes/headers, which is what caught all three.** A fourth bug of the same class was caught the
+same way slightly later — see section 6b/12's Admin-vs-client Firestore SDK finding.
 
-### Gemini API key found and wired in (separate from the payment work)
+### 7d. Discord/LinkedIn redirect URIs for the new domain
+
+Added `https://lumina-web-production-b8df.up.railway.app/auth/discord/callback` and
+`.../auth/linkedin/callback` as **additional** authorized redirect URIs on both providers (kept
+`localhost:3000` too, for continued local dev). Discord's session had expired mid-task (needed
+the user to log back in); both providers' pages were reloaded after saving and the URLs read
+back to confirm persistence, not just trusting the save click.
+
+### 7e. Gemini API key found and wired in (separate from the payment work)
 
 User located a pre-existing `lumina-numerology` Gemini API key in Google AI Studio
 (`gen-lang-client-0531769124` — matches the Firebase project exactly; confirmed via project
 number `437784650725` matching `firebase-applet-config.json`'s `messagingSenderId`), created
 Jun 20 2026, billed to the user's own "My Billing Account" (Tier 1 Prepay). Read the full key
 via the accessibility tree of AI Studio's "API key details" dialog (not a screenshot) after
-`navigator.clipboard.readText()` hung the tab waiting on a permission prompt — same
-screenshot-vs-accessibility-tree lesson as every credential read this project has done. Saved to
-`Credentials\.env`, the repo-local `.env`, and as a Railway variable. This closes the
-previously-flagged "no GEMINI_API_KEY anywhere" gap — the AI Consult/Akashic routes (still
-free/unlisted per the Category E naming flag, not payment-gated) should now actually work in
-both local dev and production.
+`navigator.clipboard.readText()` hung the tab waiting on a permission prompt. Saved to
+`Credentials\.env`, the repo-local `.env`, and as a Railway variable. Closes the previously-open
+"no GEMINI_API_KEY anywhere" gap.
 
-### Still open after this session
+---
 
-- Real Razorpay keys (new, Lumina-specific account) — pending the user's own signup/KYC.
-- Discord's and LinkedIn's redirect URIs need the new Railway domain added (as an *additional*
-  URI, keeping `localhost:3000` for continued local dev) — in progress as this section is
-  written; check `handoff.md` for the confirmed outcome.
-- The Category E (Master Consensus Engine) real-numerologist-naming issue is **unchanged and
-  still unresolved** — now live-deployed alongside everything else, which doesn't make it more
-  urgent than before but is worth restating: it was never blocking this deployment, only
-  blocking that one feature's inclusion in the paid packages.
-- Instagram (Tier 2) still not wired — unrelated to this session's work.
+## 8. Webhook Firestore bugs, caught by a real signed-webhook smoke test (folded into section 6/7's timeline)
 
-## 10. Where every credential lives
+Before trusting `billing.ts`'s webhook handler, built a real HMAC-signed test payload by hand
+(a `payment.captured` event shape, signed with a temporary local `RAZORPAY_WEBHOOK_SECRET`) and
+POSTed it to the running server — not a hypothetical review, an actual request/response cycle.
+This caught two real bugs before they could ship silently broken:
 
-All in `C:\Projects\Credentials\.env`, under a `# LUMINA-SAAS — ...` comment block per provider,
-appended in this order: GitHub → X (OAuth2 pair, then the real OAuth 1.0a pair) → Facebook →
-Microsoft. Variable names only, listed above per section. **This `.env` file is outside any git
-repo** — the standing convention for this whole `C:\Projects` working environment (see
-`C:\Projects\CLAUDE.md`) is to never paste raw secret values into chat, commits, or any file
-tracked by git — including this one.
+1. **Client SDK `permission-denied`.** `billing.ts` originally used the same Firestore **client**
+   SDK `server.ts` uses for `/api/profiles`. A Razorpay webhook has no Firebase Auth session at
+   all (only an HMAC signature to trust), so Firestore Security Rules correctly denied the
+   write. Fixed by switching `billing.ts` entirely to the Firebase **Admin** Firestore SDK
+   (`db.collection(...).doc(...)`, not `doc()`/`getDoc()`/`setDoc()`), which bypasses Security
+   Rules using the service account's own privilege — the correct trust boundary once `verifyAuth`
+   or the webhook's HMAC check has already established who's allowed to do what.
+2. **Wrong Firestore database, gRPC NOT_FOUND.** Even after switching to Admin SDK,
+   `getFirestore(app)` with no second argument defaults to `"(default)"` — this project uses a
+   **named** database (`ai-studio-luminanumerology-...`, see section 1). Fixed by reading
+   `firestoreDatabaseId` from `firebase-applet-config.json` (same config the client SDK path
+   already used) and passing it to `getFirestore(app, databaseId)`.
+
+After both fixes, re-ran the same signed-payload test: `{"received":true}`, no error. Verified
+the actual Firestore document via a separate one-off Admin SDK script (confirmed
+`plan: "free"`, `aiCreditsRemaining: 1` — correct for a 1-credit `payment.captured` event), then
+deleted the test document.
+
+---
+
+## 9. Category E naming fix + re-gating behind Premium (2026-09-09)
+
+*(Numbered separately from section 6d's original finding since this is where it was actually
+resolved, in a later part of the same overall project — see section 13 for the exact date.)*
+
+Covered in full in section 13 below, since it happened as part of the same "close all open items
+one by one" pass as the Razorpay/Instagram status check-in. Cross-referenced here so the
+naming-issue thread (section 6d → here) is easy to follow chronologically.
+
+---
+
+## 10. Working conventions established across this project (for quick reference)
+
+- **Credential reads**: always via `read_page`/`find` (accessibility tree), never by
+  eyeballing/OCR-ing a screenshot. Zero misreads since adopting this after the one GitHub
+  Client-ID mistake in section 3a.
+- **Popups/2FA/CAPTCHAs**: `signInWithPopup`, GitHub App installation confirmation, MFA prompts,
+  and hCaptcha challenges are all things browser automation cannot see or drive (or, for
+  CAPTCHAs, must never attempt to solve) — every one of these needed the human, and that's
+  expected, not a failure.
+- **Reuse-vs-create decisions**: always check for an existing app/project first, and always
+  confirm with the user before reusing one that could entangle Lumina with something unrelated
+  (X's app, a stale Discord/GitHub app under a different org, etc.).
+- **Verify before declaring anything done**: a green build/deploy status is not proof the app
+  works — sections 7c and 8 both found real, silent bugs by actually curling the live site and
+  building real signed test payloads, not by reading code or trusting dashboards.
+- **Stale local dev servers**: check `netstat`/`Get-Process` before assuming new code isn't
+  taking effect (section 4f) — recurred more than once.
+
+---
+
+## 11. Where the app's own credential-format conventions live
+
+- Tier 1 provider secrets: exist only in Firebase Console's own UI (never touched by this app's
+  own code/env at runtime).
+- Tier 2 provider secrets + Firebase Admin SDK key + OAuth state secret: needed in both
+  `C:\Projects\Credentials\.env` (canonical record, outside any git repo) and
+  `C:\Projects\Lumina-SaaS\.env` (gitignored, repo-local — what `server.ts` actually reads via
+  `dotenv.config()` at runtime).
+- Railway (production) needs its own copies of the same values, set as Railway environment
+  variables (not read from any `.env` file — Railway injects them directly into the container's
+  `process.env`). `LUMINA_FIREBASE_ADMIN_SDK_JSON` (inline JSON content) is used in production
+  instead of `LUMINA_FIREBASE_ADMIN_SDK_PATH` (a local file path that doesn't exist on Railway's
+  filesystem).
+
+Full up-to-date list of exactly which variables exist and where: section 14.
+
+---
+
+## 12. (Reserved — see section 8 above, which covers this project's Admin-vs-client Firestore SDK finding.)
+
+---
+
+## 13. Closing the open items, one by one (2026-09-09)
+
+User asked to close the three remaining open items from section 7/handoff.md — naming issue,
+Razorpay account, Instagram — one at a time, plus a final documentation pass (this rewrite).
+
+### 13a. Category E real-numerologist naming — DONE, fully verified
+
+Renamed all 5 AI "master" lenses from real people to original fictional archetypes, each defined
+purely by the numerological method it applies:
+
+| Real person (removed) | Archetype (now used) | Method/lens |
+|---|---|---|
+| Dr. J C Chaudhry | **The Grid Warden** | Chaldean & Lo Shu |
+| Sanjay B Jumaani | **The Bridge Analyst** | Name Correction & Bridge Numbers |
+| Dr. Kartick Chakraborty | **The Vedic Seer** | Vedic & Transit Cycles |
+| Anupam V Kapil | **The Kabbalist** | Kabbalah & Esoteric |
+| Rajat Nayar | **The Synthesist** | Holistic Synthesis |
+
+Found and fixed in **every** location, not just the obvious one (a careful re-grep after the
+first pass caught two more spots that would otherwise have shipped with real names still
+present):
+1. `server.ts`'s `/api/consult` prompt text, `systemInstruction`, and the Gemini response JSON
+   schema's property names (`jcChaudhry` → `gridWarden`, etc.) and `required[]` array.
+2. `index.html`'s AI-response rendering template (`masterAdviceHtml`, reads the renamed schema
+   keys).
+3. A **completely separate, entirely offline** code path: the `AGENTS[]` array (used by
+   `runConsensus()`/the exportable report — deterministic template text, no AI call at all).
+   This one was actually **worse** than the AI prompt: it hardcoded fabricated professional bios
+   tied to the real names ("Guinness World Record", "Bollywood Astro-Numerologist · Celebrity
+   Advisor", "Global Celebrity Numerologist · USA · UK · Dubai") that aren't even accurate
+   AI-generated content — just static, invented credentials presented as fact.
+4. The exportable Markdown report template (its own "Section 9: THE 5-AGENT CONSENSUS COUNCILS"
+   heading and per-master bullet list).
+5. A landing-page teaser card: "Synthetic synthesis from Chaudhry, Jumaani, Chakraborty, Kapil &
+   Nayar algorithms." — caught by re-grepping the whole repo after the first pass, not part of
+   the original plan.
+6. A Tools-tab badge: `<span class="badge new">Dr. JC Chaudhry</span>` crediting him by name for
+   the mobile-number numerology check (his actual, real signature technique) — also caught by
+   the re-grep.
+
+Verified: grepped the whole repo for all 5 surnames after every edit (clean each time until the
+final pass came back with zero matches across `index.html` and `server.ts`); `tsc --noEmit`
+clean; restarted the local dev server and curled the served HTML to confirm the 5 new archetype
+names actually render server-side, not just present in source; redeployed to Railway and
+re-confirmed live (`curl .../ | grep "The Grid Warden"` → found; grep for any of the 5 old
+surnames → nothing).
+
+### 13b. Category E moved back behind Premium — user's explicit choice
+
+Asked directly rather than assumed: now that the naming risk is resolved, should Category E
+(Consensus + Akashic) go back behind the paywall (original 3-package plan) or stay free as a
+differentiator? **User chose: back behind Premium.**
+
+- `index.html`: reverted the temporary free-tier CSS exclusion for `#tab-consensus`/
+  `#tab-akashic` (added in section 6d, now removed) — both tabs are locked like every other
+  premium feature again. `renderAkashic()`'s own separate lock (independent of the global
+  `body.free-tier` mechanism) restored, now reading `serverEntitlement.plan === 'premium'`
+  (server-verified) instead of the old spoofable per-profile `p.plan` field it used before the
+  section 5 security fix — this is a genuine improvement over the pre-incident behavior, not
+  just a revert.
+- `server.ts`: both `/api/consult` and `/api/akashic` now call `spendAiCredit(uid)` (exported
+  from `billing.ts` in section 6b, proven working via section 8's webhook smoke test) **before**
+  running the Gemini call. A free user or a premium user who's exhausted their fair-use AI
+  credits gets `402` with a clear, actionable message — and critically, the Gemini call never
+  runs in that case, so this is real cost control, not just a UI-level hide.
+- **Bug found and fixed along the way**: the client's `/api/consult` handler discarded the
+  server's actual error message and always showed a generic "Cosmic signals interrupted. Please
+  try again." toast — actively misleading for a `402`, since retrying doesn't help. Fixed to
+  surface `response.json().error`. (The `/api/akashic` handler already did this correctly;
+  `/api/consult` didn't, until now.)
+- Verified: `tsc --noEmit` clean; restarted the dev server, confirmed both AI routes still
+  correctly `401` when unauthenticated; redeployed to Railway, re-confirmed live.
+
+### 13c. Razorpay account status — checked directly, not assumed
+
+Logged into the Razorpay dashboard directly (not from memory/assumption) to check whether the
+user's new account existed yet. Found: **still the same single account** — thekpihub.com
+approved, same live key (`rzp_live_TRgvHEnUNegwWQ`), same MID `SiChGAauKLx91P`,
+`razorpay.me/@thekpihub`. Checked the account/profile switcher explicitly — confirmed this is a
+single-business login, not a multi-account one with a second Lumina account hiding behind a
+switcher. **No new account exists.**
+
+User was confused about whether this meant "add Lumina to the existing account" — clarified:
+no, it needs to be a genuinely fresh signup at razorpay.com (not logged into the existing
+account), with new business details for Lumina, because Razorpay's own UI already confirmed
+(section 7a) that adding a different-business-model site to the existing account isn't valid.
+**User said they'd do this next** — this remains the single biggest blocker to the payment
+system being real rather than architecturally-ready-but-inactive.
+
+### 13d. Instagram — re-confirmed still blocked, asked directly
+
+Asked the user directly (not assumed from section 4's earlier note) whether they now have a
+Business/Creator Instagram account linked to a Facebook Page. **User confirmed: no, not yet.**
+Nothing to build until that exists — the plan for exactly what to build once it does is already
+fully written out in `handoff.md`'s "If continuing with Instagram" section, so no work was lost
+by deferring again.
+
+### 13e. This document rewrite
+
+User asked for "every single step taken till now" to be captured across all relevant `.md`
+files and the global skill, since this file's section numbering had become tangled through
+incremental edits (0, 1, 2, ..., 7, 9, 11, 12, 10 — non-chronological, hard to follow) and was
+missing the section-13 events entirely. This is that rewrite: same content as before
+(nothing removed), renumbered into a single chronological sequence, with the missing sections
+(9, 13, this section, and an updated credential index) added. `handoff.md` and the global skill
+`lumina-saas` were updated in the same pass — see those files for the current-state summary this
+detailed log supports.
+
+---
+
+## 14. Where every credential lives (kept current — update this whenever a credential changes)
+
+All in `C:\Projects\Credentials\.env`, under a `# LUMINA-SAAS — ...` comment block per provider.
+**This `.env` file is outside any git repo** — the standing convention for this whole
+`C:\Projects` working environment is to never paste raw secret values into chat, commits, or any
+file tracked by git, including this one. Variable names only, listed below — never values.
+
+| Credential | Env var name(s) | Where it's actually consumed at runtime |
+|---|---|---|
+| GitHub OAuth (Tier 1) | `LUMINA_GITHUB_CLIENT_ID`/`_SECRET` | Firebase Console only |
+| X/Twitter OAuth 1.0a (Tier 1) | `LUMINA_X_CONSUMER_KEY`/`_SECRET` (+ an unused OAuth2 pair, `LUMINA_X_OAUTH2_CLIENT_ID`/`_SECRET`) | Firebase Console only |
+| Facebook OAuth (Tier 1) | `LUMINA_FB_APP_ID`, `LUMINA_FB_CLIENT_TOKEN`, `LUMINA_FB_APP_SECRET` | Firebase Console only |
+| Microsoft/Entra OAuth (Tier 1) | `LUMINA_MS_TENANT_ID`, `LUMINA_MS_CLIENT_ID`, `LUMINA_MS_CLIENT_SECRET` | Firebase Console only |
+| Discord OAuth (Tier 2) | `LUMINA_DISCORD_CLIENT_ID`/`_SECRET` | `Lumina-SaaS\.env` (local) + Railway variable |
+| LinkedIn OAuth (Tier 2) | `LUMINA_LINKEDIN_CLIENT_ID`/`_SECRET` | `Lumina-SaaS\.env` (local) + Railway variable |
+| Firebase Admin SDK service account | `LUMINA_FIREBASE_ADMIN_SDK_PATH` (local file path) *or* `LUMINA_FIREBASE_ADMIN_SDK_JSON` (inline content, Railway) | Both `.env` files locally (path); Railway variable (inline JSON) |
+| OAuth CSRF state signing secret | `OAUTH_STATE_SECRET` | `Lumina-SaaS\.env` (local) + Railway variable |
+| Gemini API key | `GEMINI_API_KEY` | `Lumina-SaaS\.env` (local) + Railway variable |
+| Razorpay (not yet real) | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Not set anywhere yet — pending the user's new account (section 13c) |
+
+The actual key file this table's Firebase Admin SDK row refers to:
+`C:\Projects\Credentials\lumina-firebase-adminsdk.json` (never inside the repo).
