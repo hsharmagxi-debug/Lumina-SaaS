@@ -14,6 +14,13 @@ and the AI routes, and a real Gemini API key are all wired in and deployed. Full
 including 3 real bugs found and fixed by actually curling the live site (bun.lock, hardcoded
 PORT, missing trust-proxy) — is in memory.md section 12.
 
+**Discord and LinkedIn OAuth redirect URIs for the new domain — DONE, verified.**
+`https://lumina-web-production-b8df.up.railway.app/auth/discord/callback` and
+`.../auth/linkedin/callback` are added as *additional* authorized redirect URIs on both (Discord
+app `1546632758548234262`, LinkedIn app `264524009`) — `localhost:3000` kept too, for continued
+local dev. Confirmed by reloading each provider's settings page after saving and reading the
+URLs back, not just trusting the save click.
+
 **Still open, in priority order:**
 1. **Real Razorpay keys.** The only available account's live key is approved for thekpihub.com
    only (different business model) — user is creating a separate Razorpay account for Lumina.
@@ -23,19 +30,13 @@ PORT, missing trust-proxy) — is in memory.md section 12.
    in the Razorpay dashboard (Settings → Webhooks) with events: `subscription.activated`,
    `subscription.charged`, `subscription.cancelled`, `subscription.completed`,
    `subscription.expired`, `payment.captured`.
-2. **Discord/LinkedIn OAuth redirect URIs for the new domain** — needs
-   `https://lumina-web-production-b8df.up.railway.app/auth/discord/callback` and
-   `.../auth/linkedin/callback` added as *additional* authorized redirect URIs (keep
-   `localhost:3000` too) in each provider's dev console. Check whether this session already did
-   it (search this file's own later updates, or just check the dashboards directly) before
-   redoing it.
-3. **The Category E (Master Consensus Engine) real-numerologist-naming issue is still
+2. **The Category E (Master Consensus Engine) real-numerologist-naming issue is still
    unresolved** — held back from the paid packages (free/unlisted, per an earlier decision), but
    that's a mitigation, not a fix. See memory.md section 11 for the full writeup. Recommended:
    rename the 5 AI "lenses" (Dr. J C Chaudhry, Sanjay B. Jumaani, etc.) to original archetypes
    describing the method, not the person — a same-day text change in `server.ts`'s
    `/api/consult` prompt.
-4. Instagram (Tier 2 OAuth) — still unwired, unrelated to the billing work.
+3. Instagram (Tier 2 OAuth) — still unwired, unrelated to the billing work.
 
 Full pricing/positioning rationale: the **"Lumina Premium Blueprint"** artifact
 (https://claude.ai/code/artifact/d53e2240-2e54-46b6-a4cd-e689a0140434).
