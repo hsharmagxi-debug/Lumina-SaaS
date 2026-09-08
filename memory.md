@@ -211,7 +211,118 @@ when this file was written — check `handoff.md` for current status.**
 | Discord | ❌ Still fake | Tier 2 — same; also had the dead-code bug noted above (now fixed, but still routes to the fake template since `providerName === 'discord'` never got a real branch) |
 | Yahoo | ❌ Still fake | Was in the original Tier 1 scope list but never actually reached |
 
-## 8. Where every credential lives
+## 9. Tier 2 — Discord wired to real OAuth (2026-09-08), LinkedIn/Instagram deferred
+
+User chose to tackle Tier 2 (LinkedIn, Instagram, Discord — none natively supported by Firebase
+Auth). Scope narrowed live during planning:
+- **Instagram deferred entirely.** "Instagram API with Facebook Login" (the modern product,
+  since Instagram Basic Display is being retired) only works if the signing-in account is a
+  Business/Creator IG account linked to a Facebook Page the user admins — the user wasn't sure
+  they had that set up, so this was dropped rather than building against an untestable flow.
+- **LinkedIn deferred mid-session.** LinkedIn Developer Portal needed a login I can't perform;
+  user said "not right now" when asked to log in. The server-side code is generic enough
+  (`oauth-providers.ts`'s `PROVIDERS` table) that adding LinkedIn later is just one more config
+  entry + one more `else if` in `index.html` — no architecture changes needed.
+- **Discord: done, user-confirmed working end-to-end.**
+
+### Architecture (new, shared by any future Tier 2 provider)
+
+Unlike Tier 1 (Firebase's own `signInWithPopup` + built-in provider classes), Firebase has no
+native LinkedIn/Discord provider — so this needed a real custom-backend OAuth exchange:
+
+1. **`oauth-providers.ts`** (new file, repo root): a `PROVIDERS` config table (currently
+   `discord`, ready for `linkedin`) each describing its authorize URL, scope, token exchange,
+   and profile-fetch function. Exports `createOAuthRouter(getAdminAuth)`, an Express router with
+   two generic routes:
+   - `GET /:provider/start` — builds the provider's authorize URL (client ID from env, redirect
+     URI computed from the request so it's `http://localhost:3000/auth/<provider>/callback` in
+     dev), with a **stateless HMAC-signed `state`** param for CSRF (no session store — signed
+     with `OAUTH_STATE_SECRET`, 10-minute expiry, verified via `crypto.timingSafeEqual`).
+   - `GET /:provider/callback` — verifies `state`, exchanges the code server-side for an access
+     token + profile, then calls Firebase Admin's `createAuth().createCustomToken(uid, {provider})`
+     (uid is namespaced, e.g. `discord:123456`). Responds with a tiny HTML page that
+     `postMessage`s `{type: 'LUMINA_OAUTH_SUCCESS', token, profile}` (or `_ERROR`) back to
+     `window.opener` and closes itself.
+2. **`server.ts`**: added a lazy `getAdminAuth()` (mirrors the existing `getDb()` pattern) that
+   loads the Firebase Admin service-account JSON from `LUMINA_FIREBASE_ADMIN_SDK_PATH` and
+   mints an Admin `Auth` instance; mounted `app.use("/auth", createOAuthRouter(getAdminAuth))`.
+   Added `firebase-admin` as a real dependency (`npm install firebase-admin`).
+3. **`index.html`**: added `startOAuthPopup(providerName, fallbackAvatar)` — opens
+   `window.open('/auth/<provider>/start', ...)`, listens for the `message` event (checking
+   `event.origin` and `event.data.provider`), and on success calls
+   `auth.signInWithCustomToken(token)` then `submitInlineAuth(...)` using the `profile` data from
+   the postMessage payload (custom-token sign-in does **not** populate `displayName`/`email`/
+   `photoURL` on the Firebase user object the way federated popup sign-in does — that's why the
+   server sends profile data separately rather than relying on the client reading it off
+   `result.user`). Also polls `popup.closed` to detect a cancelled sign-in and restore the
+   button. Replaced the old Discord fake-UI branch (hardcoded "Mystic Sage" persona) with a call
+   to this helper; added a new `providerName === 'linkedin'` branch using the same helper (code
+   is ready, just has no real LinkedIn app behind it yet).
+
+### Discord — done, user-confirmed working
+
+- No existing Discord application on the account — created fresh via
+  discord.com/developers/applications, named `Lumina-Numerology-Dev` (matches the naming
+  convention from Tier 1's X/Facebook apps). App ID `1546632758548234262`.
+- **Gotcha: hCaptcha on app creation** — Discord threw a "Wait! Are you human?" hCaptcha
+  challenge when submitting the "Create a new app" form. Per standing policy, bot-detection
+  challenges are never something I solve — asked the user to complete it themselves, then
+  continued once they confirmed the app existed.
+- OAuth2 tab: added redirect `http://localhost:3000/auth/discord/callback`, saved. Public
+  Client toggle left OFF (confidential client, so a real Client Secret is issued — required
+  since the code exchange happens server-side, not in a public/native client).
+- **Gotcha: MFA on secret reveal** — Discord's Client Secret field starts hidden
+  ("Hidden for security"); clicking **Reset Secret** (necessary since Discord never shows the
+  original auto-generated secret, only a regenerated one) triggered the account's own
+  Multi-Factor Authentication prompt. Same category as Facebook's password re-auth from Tier
+  1 — asked the user to complete it themselves. Read the revealed secret via `read_page`'s
+  accessibility tree (`textbox` value), not a screenshot — the standard method since the
+  GitHub Client-ID misread earlier this project.
+- Credentials saved as `LUMINA_DISCORD_CLIENT_ID` / `LUMINA_DISCORD_CLIENT_SECRET`.
+- **User manually tested and confirmed working**: real Discord OAuth popup, real consent
+  screen branded "Lumina-Numerology-Dev", landed back in the app actually signed in.
+
+### Firebase Admin SDK service-account key
+
+- Firebase Console → Project Settings → Service Accounts (project `gen-lang-client-0531769124` /
+  "lumina-numerology") → **Generate new private key**. Confirmed the "your app will lose access
+  to old key" style warning doesn't apply here — Firebase allows multiple simultaneous service
+  account keys, so this was non-destructive to anything else using the project.
+  No MFA/captcha friction on this step (already authenticated as the project owner in Chrome).
+- Downloaded JSON landed in the Windows Downloads folder as
+  `gen-lang-client-0531769124-firebase-adminsdk-fbsvc-8bc09caa1e.json` — moved to
+  `C:\Projects\Credentials\lumina-firebase-adminsdk.json` (never inside the repo, per the
+  standing convention). Path referenced by `LUMINA_FIREBASE_ADMIN_SDK_PATH`.
+
+### Env var plumbing — a real difference from Tier 1, worth remembering
+
+Tier 1's provider secrets only ever needed to exist in **Firebase Console's own UI** — the
+app's own server process never touched them (Firebase's hosted auth backend does the OAuth
+itself). `C:\Projects\Credentials\.env` was purely this session's own record of what got typed
+into Firebase Console.
+
+**Tier 2 is different**: since `server.ts` now does its own OAuth code exchange, it genuinely
+needs these values in `process.env` at runtime. `dotenv.config()` (already in `server.ts`) only
+reads `./.env` relative to cwd — and **no such file existed in the repo before this session**
+(confirmed via `find . -maxdepth 1 -iname ".env*"` — only `.env.example` was present). Created
+`C:\Projects\Lumina-SaaS\.env` (confirmed gitignored via `git check-ignore`) holding
+`LUMINA_DISCORD_CLIENT_ID/SECRET`, `LUMINA_FIREBASE_ADMIN_SDK_PATH`, and `OAUTH_STATE_SECRET` —
+this is a genuinely new file needed for Tier 2 to run at all, separate from (but recording the
+same values as) the master `Credentials\.env`.
+
+### Stale dev server gotcha (new, worth remembering)
+
+`npm run dev` failed with `EADDRINUSE: address already in use 0.0.0.0:3000` on first restart
+this session — a `node.exe` process from **2026-09-05** (the previous Tier-1 session) had been
+running unattended for 3 days, still serving the *old* code. `curl`ing `/auth/discord/start`
+against it 404'd, which could easily be misread as "the new route is broken" when the real
+problem was "you're not even talking to the new server." Found the real PID via
+`netstat -ano | grep :3000`, confirmed it was the expected stale `node.exe` (via
+`Get-Process -Id ... | select Path,StartTime`) before killing it. **Lesson: after any `server.ts`
+change, if a curl test doesn't reflect the edit, check for a stale listener on the port before
+assuming the code is wrong.**
+
+## 10. Where every credential lives
 
 All in `C:\Projects\Credentials\.env`, under a `# LUMINA-SAAS — ...` comment block per provider,
 appended in this order: GitHub → X (OAuth2 pair, then the real OAuth 1.0a pair) → Facebook →

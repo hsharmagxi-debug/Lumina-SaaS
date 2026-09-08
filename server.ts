@@ -5,9 +5,29 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { cert, initializeApp as initAdminApp, getApps as getAdminApps } from "firebase-admin/app";
+import { getAuth as getAdminAuthSdk, type Auth as AdminAuth } from "firebase-admin/auth";
+import { createOAuthRouter } from "./oauth-providers";
 import fs from "fs";
 
 dotenv.config();
+
+let adminAuthInstance: AdminAuth | null = null;
+function getAdminAuth(): AdminAuth {
+  if (!adminAuthInstance) {
+    const keyPath = process.env.LUMINA_FIREBASE_ADMIN_SDK_PATH;
+    if (!keyPath || !fs.existsSync(keyPath)) {
+      throw new Error(
+        "Firebase Admin service account key not found. Set LUMINA_FIREBASE_ADMIN_SDK_PATH to the " +
+          "downloaded service-account JSON (Firebase Console -> Project Settings -> Service Accounts)."
+      );
+    }
+    const serviceAccount = JSON.parse(fs.readFileSync(keyPath, "utf8"));
+    const adminApp = getAdminApps().length ? getAdminApps()[0] : initAdminApp({ credential: cert(serviceAccount) });
+    adminAuthInstance = getAdminAuthSdk(adminApp);
+  }
+  return adminAuthInstance;
+}
 
 let dbInstance: any = null;
 function getDb() {
@@ -44,6 +64,10 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  // Tier 2 social login (LinkedIn, Discord, ...): providers Firebase Auth doesn't support
+  // natively. See oauth-providers.ts for the exchange logic and memory.md/handoff.md for why.
+  app.use("/auth", createOAuthRouter(getAdminAuth));
 
   // Helper to get or initialize GoogleGenAI client lazily
   function getAI() {

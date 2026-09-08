@@ -3348,20 +3348,11 @@ function triggerFederatedLogin(providerName) {
     });
     return;
   } else if (providerName === 'discord') {
-    brandColor = '#5865F2';
-    content = `
-      <div style="text-align:center;margin-bottom:20px;width:100%">
-        <svg width="40" height="40" viewBox="0 0 127.14 96.36" fill="#5865F2" style="margin:0 auto 12px;display:block"><path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.5-5c.88-.65,1.72-1.34,2.53-2a75.58,75.58,0,0,0,73,0c.81.71,1.65,1.4,2.53,2a68.43,68.43,0,0,1-10.5,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31-18.83C129.87,49.84,123.6,26.91,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.83,46,53.83,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.07,46,96.07,53,91,65.69,84.69,65.69Z"/></svg>
-        <h3 style="font-size:1.15rem;font-weight:700;color:#fff;margin:0 0 4px;font-family:'Cinzel',serif">Discord Connection</h3>
-        <p style="font-size:.72rem;color:var(--txm);margin:0">Authorize Lumina to sync with your server credentials</p>
-      </div>
-      <div style="background:rgba(88,101,242,0.1);border:1px solid #5865F2;border-radius:6px;padding:12px;margin-bottom:18px;text-align:left;color:var(--txm);font-size:.72rem;width:100%;box-sizing:border-box">
-        <p style="margin:0 0 6px;color:#fff;font-weight:600">LUMINA wishes to access:</p>
-        <div>• Username, public avatar and email</div>
-        <div style="margin-top:2px">• Active server status confirmation</div>
-      </div>
-      <button type="button" class="btn btn-gold" onclick="submitInlineAuth('Mystic Sage', 'sage@discord.com', 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80', 'discord')" style="width:100%;justify-content:center;padding:10px;font-size:0.75rem;font-weight:600;background:#5865F2;border-color:#5865F2;color:#fff">Authorize Discord Connection</button>
-    `;
+    startOAuthPopup('discord', 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80');
+    return;
+  } else if (providerName === 'linkedin') {
+    startOAuthPopup('linkedin', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80');
+    return;
   } else {
     content = `
       <div style="text-align:center;margin-bottom:18px;width:100%">
@@ -3386,6 +3377,73 @@ function triggerFederatedLogin(providerName) {
       <button class="btn btn-outline btn-sm" onclick="goBackToAuthInitial()" style="margin-top:14px;width:100%;justify-content:center;font-size:0.7rem;padding:6px">← Back to Federated Options</button>
     </div>
   `;
+}
+
+// Tier 2 social login (LinkedIn, Discord, ...): providers Firebase Auth doesn't support
+// natively. Opens a real popup at our own server's /auth/<provider>/start (which redirects to
+// the provider, then back to our /callback route once the user approves), and waits for a
+// postMessage carrying either a Firebase custom token (success) or an error. See
+// oauth-providers.ts on the server for the actual OAuth exchange.
+function startOAuthPopup(providerName, fallbackAvatar) {
+  const btnSelector = `div[onclick="triggerFederatedLogin('${providerName}')"]`;
+  const btn = document.querySelector(btnSelector);
+  const originalBtnHtml = btn ? btn.innerHTML : '';
+  if (btn) btn.innerHTML = '<span class="loader" style="border-color:#000;border-bottom-color:transparent"></span> Connecting...';
+
+  const popup = window.open(`/auth/${providerName}/start`, 'lumina_oauth_popup', 'width=520,height=680,menubar=no,toolbar=no');
+  if (!popup) {
+    showToast('Please allow pop-ups for this site to sign in.');
+    if (btn) btn.innerHTML = originalBtnHtml;
+    goBackToAuthInitial();
+    return;
+  }
+
+  let settled = false;
+  const finish = () => {
+    window.removeEventListener('message', onMessage);
+    clearInterval(pollClosed);
+  };
+
+  function onMessage(event) {
+    if (event.origin !== window.location.origin) return;
+    if (!event.data || event.data.provider !== providerName) return;
+
+    if (event.data.type === 'LUMINA_OAUTH_SUCCESS') {
+      settled = true;
+      finish();
+      auth.signInWithCustomToken(event.data.token).then(() => {
+        const p = event.data.profile || {};
+        submitInlineAuth(p.name || `${providerName.charAt(0).toUpperCase() + providerName.slice(1)} User`, p.email, p.avatar || fallbackAvatar, providerName);
+      }).catch((error) => {
+        console.error(error);
+        showToast('Login failed: ' + error.message);
+        const b = document.querySelector(btnSelector);
+        if (b) b.innerHTML = originalBtnHtml;
+        goBackToAuthInitial();
+      });
+    } else if (event.data.type === 'LUMINA_OAUTH_ERROR') {
+      settled = true;
+      finish();
+      showToast('Login failed: ' + (event.data.error || 'Unknown error'));
+      const b = document.querySelector(btnSelector);
+      if (b) b.innerHTML = originalBtnHtml;
+      goBackToAuthInitial();
+    }
+  }
+  window.addEventListener('message', onMessage);
+
+  const pollClosed = setInterval(() => {
+    if (popup.closed) {
+      clearInterval(pollClosed);
+      if (!settled) {
+        window.removeEventListener('message', onMessage);
+        showToast('Sign-in cancelled.');
+        const b = document.querySelector(btnSelector);
+        if (b) b.innerHTML = originalBtnHtml;
+        goBackToAuthInitial();
+      }
+    }
+  }, 500);
 }
 
 function goBackToAuthInitial() {
