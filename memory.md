@@ -259,6 +259,42 @@ native LinkedIn/Discord provider — so this needed a real custom-backend OAuth 
    to this helper; added a new `providerName === 'linkedin'` branch using the same helper (code
    is ready, just has no real LinkedIn app behind it yet).
 
+### LinkedIn — done, user-confirmed working (2026-09-08, same day, continued session)
+
+- LinkedIn Developer Portal requires the app be tied to a **LinkedIn Company Page** — a personal
+  profile doesn't qualify ("For Individual Developers: API products... have a default Company
+  page associated with them and you must select that default Company page to proceed"). No
+  existing Page on the account, so the user created one live in the browser while watching
+  (**explicit real-time permission** for me to then drive the rest via Claude-in-Chrome,
+  superseding the initial caution about creating public-facing content unsupervised) — named
+  "Bhasad Group of Companies". That flow auto-enrolled the Page in a **Premium Company Page**
+  subscription (renews annually) as part of LinkedIn's own onboarding — not something I
+  triggered, but caught its "Auto-invite to follow" toggle (which would have messaged real
+  people — "Luis, Talia and 12 others") defaulting to ON during that onboarding and turned it
+  off before proceeding, confirmed via the "Auto-invite was turned off" toast.
+- Created app `Lumina-Numerology-Dev` (app ID `264524009`, Client ID `77npyu3t02qgfc`) tied to
+  that Page. Required an App logo (square image, min 100px) — no logo asset existed anywhere in
+  the repo, so generated a minimal 256x256 PNG by hand (raw PNG chunk writer in a throwaway Node
+  script — no ImageMagick/PIL available in this environment) in the app's navy/gold palette (a
+  gold diamond on the dark background matching `index.html`'s `--txm`/gold-button styling), then
+  uploaded it via `file_upload` from the session scratchpad directory.
+- Added the **"Sign In with LinkedIn using OpenID Connect"** product (the modern product — NOT
+  the older r_liteprofile/r_emailaddress APIs, which are being retired) — auto-provisioned
+  immediately on requesting access, no manual LinkedIn review needed.
+- Auth tab: added redirect `http://localhost:3000/auth/linkedin/callback`, confirmed persisted
+  after a page reload. Client Secret was already present (unlike Discord, no "Reset" needed) —
+  revealed via the eye icon, read through `read_page`'s accessibility tree as usual. OAuth 2.0
+  scopes section initially showed "No permissions added" right after adding the product — just
+  a stale render; a page reload showed `openid`/`profile`/`email` all present.
+- Credentials saved as `LUMINA_LINKEDIN_CLIENT_ID` / `LUMINA_LINKEDIN_CLIENT_SECRET`. No code
+  changes needed — `oauth-providers.ts`'s `linkedin` entry and `index.html`'s `linkedin` branch
+  were already written in anticipation of this (see the Tier 2 architecture section above).
+- **User manually tested and confirmed working**: real LinkedIn OAuth popup, landed back in the
+  app actually signed in.
+
+Both Tier 2 providers attempted this session are now done. Only Instagram remains deferred
+(see the "If continuing with Instagram" section in `handoff.md` for why and what it'd take).
+
 ### Discord — done, user-confirmed working
 
 - No existing Discord application on the account — created fresh via

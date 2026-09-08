@@ -10,8 +10,8 @@ loadable from any working directory.
 **Tier 1 (Firebase-native providers) — fully done, all 5 user-confirmed working**: Google,
 GitHub, X/Twitter, Facebook, Microsoft.
 
-**Tier 2 (custom backend + Firebase Admin SDK) — Discord done and user-confirmed working.**
-LinkedIn and Instagram are not wired yet — see below.
+**Tier 2 (custom backend + Firebase Admin SDK) — Discord AND LinkedIn done and user-confirmed
+working.** Only Instagram remains unwired — see below.
 
 The Tier 2 architecture (new this session) is generic: `oauth-providers.ts`'s `PROVIDERS` table
 + `createOAuthRouter()` in `server.ts` + `startOAuthPopup()` in `index.html`. Adding a new
@@ -32,30 +32,14 @@ if you want this checkpointed (matches how Tier 1's changes were eventually comm
 `C:\Projects\Credentials\lumina-firebase-adminsdk.json` (the Firebase Admin service-account key,
 lives outside the repo entirely). Both confirmed gitignored / out-of-repo already.
 
-## If continuing with LinkedIn
+## LinkedIn — done (2026-09-08, same day as Discord, continued session)
 
-LinkedIn Developer Portal (developer.linkedin.com) needed a login that wasn't done yet — the
-user said "not right now" mid-session, not "no". To pick it back up:
-
-1. Log into LinkedIn Developer Portal (developer.linkedin.com/apps) — check for an existing app
-   first before creating one (same convention as every other provider this project has done).
-2. Create an app if none exists, add the **"Sign In with LinkedIn using OpenID Connect"**
-   product (NOT the older r_liteprofile/r_emailaddress APIs — those are being phased out).
-3. Under Auth settings, add redirect URL `http://localhost:3000/auth/linkedin/callback`.
-4. Get the Client ID + Client Secret, save to:
-   - `C:\Projects\Credentials\.env` as `LUMINA_LINKEDIN_CLIENT_ID` / `LUMINA_LINKEDIN_CLIENT_SECRET`
-     (matching the existing `LUMINA_DISCORD_*` block's format/comment style).
-   - `C:\Projects\Lumina-SaaS\.env` (same variable names — this is the file the server actually
-     reads at runtime; it already has commented-out placeholder lines for these two).
-5. `oauth-providers.ts` already has a `linkedin` entry in its `PROVIDERS` table — verify it works
-   as-is (OpenID Connect userinfo endpoint, standard `authorization_code` grant) once real
-   credentials exist; no code changes should be needed.
-6. `index.html`'s `triggerFederatedLogin` already has a `providerName === 'linkedin'` branch
-   calling `startOAuthPopup('linkedin', ...)` — nothing to add there either.
-7. Restart the dev server (`cd C:\Projects\Lumina-SaaS && npm run dev` — check for a stale
-   listener on port 3000 first with `netstat -ano | grep :3000`, see memory.md's "stale dev
-   server gotcha" if `npm run dev` fails with `EADDRINUSE`), then ask the user to test the
-   LinkedIn popup manually — same as every other provider, I can't drive or observe the popup.
+Picked back up after the user logged into developer.linkedin.com themselves. Full detail in
+memory.md's "LinkedIn — done, user-confirmed working" section — short version: created a
+LinkedIn Company Page ("Bhasad Group of Companies", required — personal profiles can't own a
+dev app), app `Lumina-Numerology-Dev` (ID `264524009`), added the "Sign In with LinkedIn using
+OpenID Connect" product, redirect `http://localhost:3000/auth/linkedin/callback`. Credentials
+in both `.env` files. **User-confirmed working live.** No further action needed here.
 
 ## If continuing with Instagram
 
