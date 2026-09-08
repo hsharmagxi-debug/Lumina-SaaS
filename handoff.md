@@ -5,38 +5,42 @@ Read `memory.md` in this same folder first for the full detailed log — this fi
 (`C:\Users\Dell\.claude\skills\lumina-saas\SKILL.md`) for a same-session-equivalent digest
 loadable from any working directory.
 
-## ✅ CURRENT STATE (2026-09-08, end of session) — read this first, the sections below are historical
+## ✅ CURRENT STATE (2026-09-09) — read this first, the sections below are historical
 
 **The app is live**: https://lumina-web-production-b8df.up.railway.app (Railway project
-`Lumina-SaaS`, service `lumina-web`). Real Razorpay billing (3 packages: Premium Monthly ₹299,
-Premium Yearly ₹2,499, Insight Credits ₹49/₹199-for-5), Firebase ID-token auth on `/api/profiles`
-and the AI routes, and a real Gemini API key are all wired in and deployed. Full story —
-including 3 real bugs found and fixed by actually curling the live site (bun.lock, hardcoded
-PORT, missing trust-proxy) — is in memory.md section 12.
+`Lumina-SaaS`, service `lumina-web`). Real Razorpay billing architecture (3 packages: Premium
+Monthly ₹299, Premium Yearly ₹2,499, Insight Credits ₹49/₹199-for-5), Firebase ID-token auth on
+`/api/profiles` and the AI routes, and a real Gemini API key are all wired in and deployed. Full
+deployment story — including 3 real bugs found and fixed by actually curling the live site
+(bun.lock, hardcoded PORT, missing trust-proxy) — is in memory.md section 12.
 
-**Discord and LinkedIn OAuth redirect URIs for the new domain — DONE, verified.**
-`https://lumina-web-production-b8df.up.railway.app/auth/discord/callback` and
-`.../auth/linkedin/callback` are added as *additional* authorized redirect URIs on both (Discord
-app `1546632758548234262`, LinkedIn app `264524009`) — `localhost:3000` kept too, for continued
-local dev. Confirmed by reloading each provider's settings page after saving and reading the
-URLs back, not just trusting the save click.
+**Discord and LinkedIn OAuth redirect URIs for the new domain — DONE, verified** (section 12).
 
-**Still open, in priority order:**
-1. **Real Razorpay keys.** The only available account's live key is approved for thekpihub.com
-   only (different business model) — user is creating a separate Razorpay account for Lumina.
-   Once you have `Key ID`/`Key Secret`/webhook secret: set them as `RAZORPAY_KEY_ID`,
-   `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` (Railway variables + local `.env`), and
-   register the webhook URL `https://lumina-web-production-b8df.up.railway.app/api/billing/webhook`
-   in the Razorpay dashboard (Settings → Webhooks) with events: `subscription.activated`,
+**The Category E real-numerologist-naming issue — DONE, verified (2026-09-09).** All 5 AI
+lenses (Master Consensus Engine + the offline `AGENTS[]` array + the exportable report template
++ 2 more spots a careful re-grep caught) renamed from real people to original archetypes (Grid
+Warden, Bridge Analyst, Vedic Seer, Kabbalist, Synthesist) — see memory.md's newest section for
+the full list of everywhere this was fixed. **User's explicit follow-up choice: Category E is
+back behind Premium** (matching the original 3-package plan) now that it's safe to sell — both
+`/api/consult` and `/api/akashic` now call `spendAiCredit()` server-side before running Gemini,
+so the fair-use cap is real cost control, not just a UI hide. Verified live.
+
+**Still open, in priority order — both status-checked directly on 2026-09-09, not assumed:**
+1. **Real Razorpay keys.** Checked the dashboard directly: still the same single account
+   (thekpihub.com approved, same live key, MID `SiChGAauKLx91P`) — **no second/new account
+   exists yet.** User needs to sign up completely fresh (razorpay.com → Sign Up, not logged into
+   the existing account) with new business details for Lumina — Razorpay's own UI already
+   confirmed adding Lumina to the existing account isn't valid (different business model than
+   thekpihub.com). User said they'd do this next. Once real `Key ID`/`Key Secret`/webhook
+   secret exist: set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`
+   (Railway variables + local `.env`), and register the webhook URL
+   `https://lumina-web-production-b8df.up.railway.app/api/billing/webhook` in the Razorpay
+   dashboard (Settings → Webhooks) with events: `subscription.activated`,
    `subscription.charged`, `subscription.cancelled`, `subscription.completed`,
    `subscription.expired`, `payment.captured`.
-2. **The Category E (Master Consensus Engine) real-numerologist-naming issue is still
-   unresolved** — held back from the paid packages (free/unlisted, per an earlier decision), but
-   that's a mitigation, not a fix. See memory.md section 11 for the full writeup. Recommended:
-   rename the 5 AI "lenses" (Dr. J C Chaudhry, Sanjay B. Jumaani, etc.) to original archetypes
-   describing the method, not the person — a same-day text change in `server.ts`'s
-   `/api/consult` prompt.
-3. Instagram (Tier 2 OAuth) — still unwired, unrelated to the billing work.
+2. **Instagram (Tier 2 OAuth)** — asked directly, user confirmed they do NOT currently have a
+   Business/Creator Instagram account linked to a Facebook Page (the hard API prerequisite).
+   Genuinely nothing to build until that exists — don't restart this without checking again.
 
 Full pricing/positioning rationale: the **"Lumina Premium Blueprint"** artifact
 (https://claude.ai/code/artifact/d53e2240-2e54-46b6-a4cd-e689a0140434).
