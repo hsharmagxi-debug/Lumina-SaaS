@@ -5,10 +5,39 @@ Read `memory.md` in this same folder first for the full detailed log — this fi
 (`C:\Users\Dell\.claude\skills\lumina-saas\SKILL.md`) for a same-session-equivalent digest
 loadable from any working directory.
 
-## ✅ CURRENT STATE (2026-09-09)
+## ✅ CURRENT STATE (2026-09-09, end of day)
 
-**The app is live**: https://lumina-web-production-b8df.up.railway.app (Railway project
-`Lumina-SaaS`, service `lumina-web`).
+**The app is live and fully verified end-to-end**: https://lumina-web-production-b8df.up.railway.app
+(Railway project `Lumina-SaaS`, service `lumina-web`). Confirmed directly, not assumed: `GET /`
+→ 200 with today's latest code actually rendering (checked for "Grid Warden"), `GET
+/api/billing/entitlement` with no token → 401 (auth gate is real). The local → GitHub → Railway
+pipeline is fully automatic — the last deploy (triggered by a docs-only commit) built and went
+live in about a minute with zero manual steps.
+
+**`lumina.bhasad.org` will not happen** — `bhasad.org` is not registered under any account the
+user has access to, checked six independent ways (the live domain itself, Google Workspace
+admin — blocked entirely for browser automation, Squarespace, Google Cloud Domains across all 5
+of the user's GCP projects, a guessed alternative domain that turned out taken too, and a
+"purchased via Google Workspace" claim that didn't hold up on re-check). Full writeup:
+memory.md section 15a. **The production URL is the Railway one above, permanently, unless the
+user names a specific available domain and explicitly confirms buying it** — that's the one
+thing being deliberately held back from "just proceed," since it's a real purchase.
+
+**Repo is now public**, with real branch protection on `main` (force-push and branch deletion
+both blocked, verified via GitHub's API) — done 2026-09-09 after confirming GitHub's Free plan
+provides zero protection features for private repos, and after a full git-history secret scan
+came back clean (memory.md section 15g).
+
+**A second, live instance of the real-numerologist-naming issue was found and fixed** — not in
+this repo, but in a MindStudio-hosted reimplementation of `/api/consult` ("Lumina Cosmic Council
+Guidance", built back in August, entirely independently of this project's Claude Code sessions).
+Fixed to the same archetype names and republished. It's disconnected from the live app either
+way (confirmed zero `mindstudio` references anywhere in this repo) and currently can't even run
+(the MindStudio account has no funds) — not something worth spending money on, since the real
+`/api/consult` already runs on a working Gemini API key with no dependency on it. Full writeup:
+memory.md section 15f.
+
+**Historical context below this banner (2026-09-08/09, from earlier the same day):**
 
 - **All 5 Tier 1 login providers** (Google, GitHub, X/Twitter, Facebook, Microsoft) — real,
   user-confirmed working. `memory.md` section 3.
