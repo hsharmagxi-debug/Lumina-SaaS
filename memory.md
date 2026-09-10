@@ -909,3 +909,22 @@ this was done, or do it.
 **Updated `handoff.md`'s open-items list**: Yahoo moved from "still open" to done; Razorpay and
 Instagram remain exactly as before, now first and second (previously first and second of three,
 Yahoo removed).
+
+### 16a. Re-tested Google/GitHub/X/Facebook/Microsoft on production (same session, right after)
+
+User asked to go re-test the other 5 Tier 1 providers on the live site, per the flag above.
+Triggered each one from https://lumina-web-production-b8df.up.railway.app's real sign-in modal
+(fresh page load before each, to avoid stale-modal-state false negatives — hit exactly this on
+the first X/Twitter attempt, where a failed `navigate` left the click landing on the previous
+provider's leftover "Connecting..." state; redone cleanly after). Checked
+`read_console_messages` after each click. **Zero errors on any of the 5** — no
+`auth/unauthorized-domain`, no other Firebase error. Each opened a real `signInWithPopup` window
+outside Claude-in-Chrome's tracked tab group, so full login completion wasn't driven here (same
+structural limitation as every prior provider test) — only the config-level failure mode was
+being checked for, and it's clear across the board. Confirms the fix in section 16 wasn't
+Yahoo-specific.
+
+One transient hiccup: a `navigate` call returned "Browser extension is not connected" once,
+right after the Facebook click — recovered on its own by the next `tabs_context_mcp` call.
+Likely the OS-level popup window briefly stealing focus from Chrome; not a real problem, just
+retried the navigate.

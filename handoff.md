@@ -93,9 +93,13 @@ memory.md section 15f.
    plan for exactly what to build once it does is below.
 3. ~~Yahoo (Tier 1)~~ — **done 2026-09-10, user-confirmed working.** See CURRENT STATE banner and
    memory.md section 16.
-4. **Re-test Google/GitHub/X/Facebook/Microsoft on the live production URL** — not previously
-   verified past the Firebase Authorized-domains gate (see banner above). Low effort, just needs
-   someone to click through each one on https://lumina-web-production-b8df.up.railway.app.
+4. ~~Re-test Google/GitHub/X/Facebook/Microsoft on the live production URL~~ — **done 2026-09-10.**
+   Triggered all 5 on the live site; zero `auth/unauthorized-domain` (or any other) console
+   errors on any of them, confirming the Authorized-domains fix applies across the board, not
+   just to Yahoo. Each opened a real popup outside browser-automation's reach (as always), so
+   full end-to-end completion of each wasn't driven here — only the config-level failure mode
+   was being checked for, and it's clear. No further action needed unless a user click-through
+   surfaces something the console check couldn't catch.
 
 Full pricing/positioning rationale: the **"Lumina Premium Blueprint"** artifact
 (https://claude.ai/code/artifact/d53e2240-2e54-46b6-a4cd-e689a0140434).
