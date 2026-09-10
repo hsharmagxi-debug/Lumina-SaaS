@@ -5,7 +5,18 @@ Read `memory.md` in this same folder first for the full detailed log — this fi
 (`C:\Users\Dell\.claude\skills\lumina-saas\SKILL.md`) for a same-session-equivalent digest
 loadable from any working directory.
 
-## ✅ CURRENT STATE (2026-09-09, end of day)
+## ✅ CURRENT STATE (2026-09-10)
+
+**Yahoo (Tier 1) is now real and user-confirmed working**, the last of the 6 native-Firebase
+providers. Along the way, found and fixed a real production-only bug: the Railway domain
+(`lumina-web-production-b8df.up.railway.app`) had never been added to Firebase's Authorized
+domains list, so `signInWithPopup` failed with `auth/unauthorized-domain` — this would have
+silently broken Google/GitHub/X/Facebook/Microsoft on the *live* site too, not just Yahoo, since
+all of those were only ever confirmed on `localhost`. Added the domain; **re-test the other 5
+Tier 1 providers on production before assuming they still work.** Full writeup: memory.md
+section 16.
+
+**Previous banner (2026-09-09, end of day), still accurate below this point:**
 
 **The app is live and fully verified end-to-end**: https://lumina-web-production-b8df.up.railway.app
 (Railway project `Lumina-SaaS`, service `lumina-web`). Confirmed directly, not assumed: `GET /`
@@ -80,11 +91,11 @@ memory.md section 15f.
    Business/Creator Instagram account linked to a Facebook Page (the hard API prerequisite).
    Genuinely nothing to build until that exists — don't restart this without checking again. Full
    plan for exactly what to build once it does is below.
-3. **Yahoo (Tier 1)** — never actually reached. Same pattern as Microsoft/Facebook: create a
-   Yahoo Developer app, enable the Yahoo provider in Firebase Console with its Client ID/Secret,
-   add a `providerName === 'yahoo'` branch using
-   `signInWithPopup(new firebase.auth.OAuthProvider('yahoo.com'))` — does NOT need the Tier 2
-   custom-backend flow, since Yahoo *is* natively supported by Firebase Auth.
+3. ~~Yahoo (Tier 1)~~ — **done 2026-09-10, user-confirmed working.** See CURRENT STATE banner and
+   memory.md section 16.
+4. **Re-test Google/GitHub/X/Facebook/Microsoft on the live production URL** — not previously
+   verified past the Firebase Authorized-domains gate (see banner above). Low effort, just needs
+   someone to click through each one on https://lumina-web-production-b8df.up.railway.app.
 
 Full pricing/positioning rationale: the **"Lumina Premium Blueprint"** artifact
 (https://claude.ai/code/artifact/d53e2240-2e54-46b6-a4cd-e689a0140434).
@@ -129,5 +140,5 @@ involved than LinkedIn/Discord:
 1. `cd C:\Projects\Lumina-SaaS` — `git status` should be clean (repo-local `.env` is gitignored
    and won't show).
 2. Read this file's CURRENT STATE section above for the exact next action (Razorpay account →
-   Instagram → Yahoo, in that order).
+   Instagram, in that order — Yahoo is done).
 3. `npm run dev` to bring the dev server back up on `http://localhost:3000`.

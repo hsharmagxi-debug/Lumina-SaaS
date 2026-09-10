@@ -774,6 +774,7 @@ file tracked by git, including this one. Variable names only, listed below — n
 | X/Twitter OAuth 1.0a (Tier 1) | `LUMINA_X_CONSUMER_KEY`/`_SECRET` (+ an unused OAuth2 pair, `LUMINA_X_OAUTH2_CLIENT_ID`/`_SECRET`) | Firebase Console only |
 | Facebook OAuth (Tier 1) | `LUMINA_FB_APP_ID`, `LUMINA_FB_CLIENT_TOKEN`, `LUMINA_FB_APP_SECRET` | Firebase Console only |
 | Microsoft/Entra OAuth (Tier 1) | `LUMINA_MS_TENANT_ID`, `LUMINA_MS_CLIENT_ID`, `LUMINA_MS_CLIENT_SECRET` | Firebase Console only |
+| Yahoo OAuth (Tier 1) | `LUMINA_YAHOO_APP_ID`, `LUMINA_YAHOO_CLIENT_ID`/`_SECRET` | Firebase Console only |
 | Discord OAuth (Tier 2) | `LUMINA_DISCORD_CLIENT_ID`/`_SECRET` | `Lumina-SaaS\.env` (local) + Railway variable |
 | LinkedIn OAuth (Tier 2) | `LUMINA_LINKEDIN_CLIENT_ID`/`_SECRET` | `Lumina-SaaS\.env` (local) + Railway variable |
 | Firebase Admin SDK service account | `LUMINA_FIREBASE_ADMIN_SDK_PATH` (local file path) *or* `LUMINA_FIREBASE_ADMIN_SDK_JSON` (inline content, Railway) | Both `.env` files locally (path); Railway variable (inline JSON) |
@@ -848,3 +849,63 @@ Before doing that (an action with real, hard-to-fully-reverse exposure once anyo
 The user referenced "the below listed links" three separate times across this session (asking to use Claude-in-Chrome to go through them) — no links ever actually attached to any of those messages. Flagged each time; not chased further since there's nothing to act on without them.
 
 Razorpay (real account) and Instagram OAuth remain exactly as described in section 13 and `handoff.md` — neither was touched this pass.
+
+---
+
+## 16. Yahoo (Tier 1) wired up + a real production-only bug found and fixed (2026-09-10)
+
+New session (context cleared, re-loaded via the `lumina-saas` skill + this file). Priority order
+from `handoff.md` was Razorpay → Instagram → Yahoo; both Razorpay and Instagram are still
+user-side-blocked (re-confirmed nothing had changed since 2026-09-09), so proceeded with Yahoo,
+the one actually unblocked item, with the user's explicit go-ahead.
+
+**Code**: added a `providerName === 'yahoo'` branch in `index.html`'s `triggerFederatedLogin`,
+copied from the Microsoft branch exactly — `new firebase.auth.OAuthProvider('yahoo.com')` via
+`signInWithPopup`. The button already existed (`btn-yahoo` / `triggerFederatedLogin('yahoo')`)
+from the original fake-provider scaffold, so no HTML changes needed.
+
+**Yahoo Developer app**: created "Lumina Numerology (Dev)" at developer.yahoo.com/apps under
+`re.design949@gmail.com` (user logged in themselves — Claude never touches Yahoo credentials).
+App ID `mZbst5hW`, Confidential Client, OpenID Connect Permissions (Email + Profile) checked.
+Redirect URI registered: `https://gen-lang-client-0531769124.firebaseapp.com/__/auth/handler`
+(Firebase's own hosted auth handler — standard Tier 1 pattern, no repo-local `.env` entry
+needed). Hit Yahoo's brand-name filter ("'Yahoo' is not allowed to be used" in the Description
+field) — reworded around it, unrelated to anything functional.
+
+Client ID/Secret pulled via `read_page` (accessibility tree), not screenshot OCR, then saved
+straight to `C:\Projects\Credentials\.env` under `LUMINA_YAHOO_APP_ID`/`_CLIENT_ID`/`_SECRET` —
+never echoed into chat.
+
+**Firebase Console**: enabled Yahoo as a sign-in provider, pasted in the real Client ID/Secret.
+Hit the known "Save stays disabled after automated paste" React quirk on the Client Secret field
+specifically (error persisted even with the field visibly full) — fixed by clicking elsewhere to
+blur the field rather than the previously-documented retype-from-empty trick; both work, blur is
+faster.
+
+**Deployed and verified live** (not just a green Railway status): committed, pushed, watched the
+Railway deployment go `BUILDING` → `SUCCESS` via the Railway MCP tools
+(`list-deployments`/`get-logs`, project `f1cea083-aaf5-4ee9-90c5-47f7f64d8995`), then `curl`ed the
+live URL and grepped for `yahoo.com` in the served HTML to confirm the actual new code was there,
+not just a successful build.
+
+**First live click-through failed**: `auth/unauthorized-domain`. Root cause, found by checking
+Firebase Console → Authentication → Settings → Authorized domains directly: **the Railway
+production domain (`lumina-web-production-b8df.up.railway.app`) was never in that list** — only
+`localhost`, the two Firebase-default domains, and several `*.run.app`/`ai.studio` domains
+related to the AI Studio scaffold were present. This means **every Tier 1 popup provider
+(Google, GitHub, X, Facebook, Microsoft — not just Yahoo) would have hit this same wall on the
+live production site**, despite all being "user-confirmed working" in section 3 — that
+confirmation was necessarily on `localhost` only, since the domain was never authorized in
+production until now. Added the Railway domain via "Add domain" in that same settings page;
+confirmed via the "domain added" toast. Re-tested Yahoo — no more console error, real popup
+opened. **User confirmed working** after logging through the real popup themselves.
+
+**Flagged, not yet done**: re-test Google/GitHub/X/Facebook/Microsoft on the *live* Railway URL
+specifically, now that the domain gate is fixed — they were likely silently broken on production
+this whole time and nobody would have noticed since all prior manual confirmation happened on
+`localhost`. Not chased further this session; next session should check with the user whether
+this was done, or do it.
+
+**Updated `handoff.md`'s open-items list**: Yahoo moved from "still open" to done; Razorpay and
+Instagram remain exactly as before, now first and second (previously first and second of three,
+Yahoo removed).
