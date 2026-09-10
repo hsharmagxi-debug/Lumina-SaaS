@@ -3531,6 +3531,33 @@ function triggerFederatedLogin(providerName) {
   } else if (providerName === 'linkedin') {
     startOAuthPopup('linkedin', 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&q=80');
     return;
+  } else if (providerName === 'yahoo') {
+    const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'yahoo\')"]');
+    const originalBtnHtml = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<span class="loader" style="border-color:#000;border-bottom-color:transparent"></span> Connecting...';
+
+    (function(){
+      if (auth.currentUser) auth.signOut();
+      const p = new firebase.auth.OAuthProvider('yahoo.com');
+      p.setCustomParameters({ prompt: 'login' });
+      return auth.signInWithPopup(p);
+    })().then((result) => {
+      const user = result.user;
+      submitInlineAuth(user.displayName || user.email || 'Yahoo User', user.email, user.photoURL || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80', 'yahoo');
+    }).catch((error) => {
+      console.error(error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        showToast('Sign-in cancelled.');
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        showToast('An account already exists with this email using a different sign-in method.');
+      } else {
+        showToast('Login failed: ' + error.message);
+      }
+      const btn = document.querySelector('div[onclick="triggerFederatedLogin(\'yahoo\')"]');
+      if (btn) btn.innerHTML = originalBtnHtml;
+      goBackToAuthInitial();
+    });
+    return;
   } else {
     content = `
       <div style="text-align:center;margin-bottom:18px;width:100%">
